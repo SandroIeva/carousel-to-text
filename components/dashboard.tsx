@@ -378,17 +378,6 @@ function SavedExtraction({
       onToggle={(e) => setOpen(e.currentTarget.open)}
     >
       <summary className="extraction-summary">
-        <span className="chevron" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path
-              d="m6 9 6 6 6-6"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
         <span className="extraction-title">
           {titleWithEmojiSpacing(extractionTitle(job))}
           <small>
@@ -404,8 +393,8 @@ function SavedExtraction({
           {job.status === "completed" && (
             <svg
               className="completed-icon"
-              width="18"
-              height="18"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden="true"
@@ -426,8 +415,23 @@ function SavedExtraction({
               />
             </svg>
           )}
-          {labels[job.status]}
+          {job.status === "completed" ? (
+            <span className="sr-only">Completed</span>
+          ) : (
+            labels[job.status]
+          )}
         </small>
+        <span className="chevron" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="m6 9 6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
       </summary>
       <div className="extraction-content">
         <a
