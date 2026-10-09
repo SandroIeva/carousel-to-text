@@ -437,6 +437,11 @@ function SavedExtraction({
           )}
           {job.status === "completed" ? (
             <span className="sr-only">Completed</span>
+          ) : job.status === "processing" ? (
+            <>
+              <span className="loader loader-status" aria-hidden="true" />
+              <span className="sr-only">Reading text</span>
+            </>
           ) : (
             labels[job.status]
           )}

@@ -297,6 +297,10 @@ small {
 .loader-slide {
   width: 20px;
 }
+.loader-status {
+  width: 24px;
+  margin-inline-end: 15px;
+}
 .slide-processing {
   display: flex;
   align-items: center;
