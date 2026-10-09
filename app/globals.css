@@ -488,6 +488,7 @@ summary {
 .completed-icon {
   flex-shrink: 0;
   color: #15803d;
+  margin-inline-end: 15px;
 }
 .chevron {
   display: inline-flex;
