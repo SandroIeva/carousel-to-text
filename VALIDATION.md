@@ -69,3 +69,7 @@ Repeated production rejection remains unresolved. Error responses now show only 
 ## Per-slide provider diagnostics
 
 Screenshot showed all OCR steps failing, not an unreadable layout. Added safe provider-specific HTTP/network diagnostics for Gemini, Apify and image downloads. Only controlled messages are persisted; raw response bodies, secrets and unknown exceptions remain hidden. 17 tests and production build passed. Need a new extraction on the updated deployment to determine actual provider failure; no billing requirement has been established.
+
+## Expandable saved extractions
+
+Replaced selected-result/history picker with independent post accordions. Initial jobs still come from authenticated RLS queries; no local-only persistence. New jobs open automatically, existing jobs start collapsed after reload. Caption/creator titles, per-slide/all copying, exports and delete use existing protected APIs. Home now redirects authenticated users to saved results. Production build/TypeScript and HTTP smoke passed; live authenticated browser validation remains open.

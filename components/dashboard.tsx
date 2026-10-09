@@ -32,8 +32,7 @@ export default function Dashboard({
     [url, setUrl] = useState(""),
     [error, setError] = useState(initialError),
     [busy, setBusy] = useState(false),
-    [selected, setSelected] = useState<string | null>(initial[0]?.id || null),
-    [copied, setCopied] = useState(false),
+    [newJobId, setNewJobId] = useState<string | null>(null),
     [count, setCount] = useState(used);
   const requestId = useRef<string | null>(null);
   useEffect(() => {
@@ -102,7 +101,7 @@ export default function Dashboard({
         throw new Error("Extraction created. Please reload your history.");
       const all: Job[] = await history.json();
       setJobs(all);
-      setSelected(b.id);
+      setNewJobId(b.id);
       setCount((c) => c + 1);
       setUrl("");
       requestId.current = null;
@@ -117,23 +116,8 @@ export default function Dashboard({
     const r = await fetch(`/api/jobs/${id}`, { method: "DELETE" });
     if (r.ok) {
       setJobs((j) => j.filter((x) => x.id !== id));
-      if (selected === id) setSelected(null);
+      if (newJobId === id) setNewJobId(null);
     } else setError("Could not delete. Please try again.");
-  }
-  const job = jobs.find((j) => j.id === selected);
-  async function copyText() {
-    if (!job) return;
-    try {
-      await navigator.clipboard.writeText(
-        job.slides
-          .map((s) => `Slide ${s.position}\n${s.text || s.error || ""}`)
-          .join("\n\n"),
-      );
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setError("Could not copy. Please select the text directly.");
-    }
   }
   return (
     <main className="simple-app">
@@ -189,88 +173,155 @@ export default function Dashboard({
           <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>
-      {job && (
-        <section className="result" aria-label="Extracted text">
-          <div className="section-title">
-            <h2>Your text</h2>
-            <a
-              href={job.url}
-              target="_blank"
-              rel="noreferrer"
-              className="subtle-link"
-            >
-              View original ↗
-            </a>
-          </div>
-          {!terminal(job.status) && (
-            <p role="status">
-              {labels[job.status]}…{" "}
-              {job.slides.length > 0 &&
-                `${job.slides.filter((s) => s.status !== "pending").length} / ${job.slides.length} Slides`}
-            </p>
-          )}
-          {job.error && <p className="notice">{job.error}</p>}
-          {job.slides.map((s) => (
-            <article className="slide" key={s.position}>
+      {!guest && jobs.length > 0 && (
+        <section className="extraction-list" aria-label="Saved extractions">
+          {jobs.map((job) => (
+            <SavedExtraction
+              key={job.id}
+              job={job}
+              initiallyOpen={job.id === newJobId}
+              onDelete={remove}
+              onError={setError}
+            />
+          ))}
+        </section>
+      )}
+    </main>
+  );
+}
+
+function extractionTitle(job: Job) {
+  const caption = job.caption
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean);
+  return caption
+    ? caption.length > 100
+      ? caption.slice(0, 100) + "…"
+      : caption
+    : job.owner
+      ? `@${job.owner}`
+      : "Instagram carousel";
+}
+
+function SavedExtraction({
+  job,
+  initiallyOpen,
+  onDelete,
+  onError,
+}: {
+  job: Job;
+  initiallyOpen: boolean;
+  onDelete: (id: string) => Promise<void>;
+  onError: (message: string) => void;
+}) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const [open, setOpen] = useState(initiallyOpen);
+  async function copy(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(label);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      onError("Could not copy. Please select the text directly.");
+    }
+  }
+  return (
+    <details
+      className="saved-extraction"
+      open={open}
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
+      <summary className="extraction-summary">
+        <span className="extraction-title">
+          {extractionTitle(job)}
+          <small>
+            {job.owner ? `@${job.owner} · ` : ""}
+            {new Date(job.created_at).toLocaleDateString("en-GB")} ·{" "}
+            {job.slides.length} slides
+          </small>
+        </span>
+        <small className="extraction-status">{labels[job.status]}</small>
+        <span className="chevron" aria-hidden="true">
+          ⌄
+        </span>
+      </summary>
+      <div className="extraction-content">
+        <a
+          href={job.url}
+          target="_blank"
+          rel="noreferrer"
+          className="subtle-link"
+        >
+          View original ↗
+        </a>
+        {!terminal(job.status) && (
+          <p role="status">
+            {labels[job.status]}…{" "}
+            {job.slides.filter((s) => s.status !== "pending").length} /{" "}
+            {job.slides.length || "?"} slides
+          </p>
+        )}
+        {job.error && <p className="notice">{job.error}</p>}
+        {job.slides.map((s) => (
+          <article className="slide" key={s.position}>
+            <div className="section-title">
               <small className="slide-label">
                 Slide {String(s.position).padStart(2, "0")}
               </small>
-              <pre>{s.text || s.error || "Processing…"}</pre>
-            </article>
-          ))}
-          {terminal(job.status) && (
-            <div className="export-actions">
-              <button className="secondary" onClick={copyText}>
-                {copied ? "Copied" : "Copy text"}
-              </button>
-              {["md", "txt", "json"].map((f) => (
-                <a
+              {s.status === "completed" && (
+                <button
                   className="text-button"
-                  key={f}
-                  href={`/api/jobs/${job.id}/export?format=${f}`}
+                  onClick={() => copy(s.text, String(s.position))}
                 >
-                  {f === "md" ? "Markdown" : f.toUpperCase()} ↓
-                </a>
-              ))}
-              <button
-                className="text-button danger"
-                onClick={() => remove(job.id)}
-              >
-                Delete
-              </button>
+                  {copied === String(s.position) ? "Copied" : "Copy"}
+                </button>
+              )}
             </div>
-          )}
-          {job.caption && (
-            <details className="caption">
-              <summary>Original caption</summary>
-              <pre>{job.caption}</pre>
-            </details>
-          )}
-        </section>
-      )}
-      {!guest && jobs.length > 0 && (
-        <details className="history">
-          <summary>Previous extractions ({jobs.length})</summary>
-          <div className="job-list">
-            {jobs.map((j) => (
-              <button
-                key={j.id}
-                className={"job-row " + (selected === j.id ? "selected" : "")}
-                onClick={() => {
-                  setSelected(j.id);
-                  setCopied(false);
-                }}
+            <pre>{s.text || s.error || "Processing…"}</pre>
+          </article>
+        ))}
+        {terminal(job.status) && (
+          <div className="export-actions">
+            <button
+              className="secondary"
+              onClick={() =>
+                copy(
+                  job.slides
+                    .map(
+                      (s) => `Slide ${s.position}\n${s.text || s.error || ""}`,
+                    )
+                    .join("\n\n"),
+                  "all",
+                )
+              }
+            >
+              {copied === "all" ? "Copied" : "Copy all text"}
+            </button>
+            {["md", "txt", "json"].map((f) => (
+              <a
+                className="text-button"
+                key={f}
+                href={`/api/jobs/${job.id}/export?format=${f}`}
               >
-                <span className="job-name">
-                  {j.owner ? "@" + j.owner : "Instagram Carousel"}
-                  <small>{j.url}</small>
-                </span>
-                <small>{labels[j.status]}</small>
-              </button>
+                {f === "md" ? "Markdown" : f.toUpperCase()} ↓
+              </a>
             ))}
+            <button
+              className="text-button danger"
+              onClick={() => onDelete(job.id)}
+            >
+              Delete
+            </button>
           </div>
-        </details>
-      )}
-    </main>
+        )}
+        {job.caption && (
+          <details className="caption">
+            <summary>Original caption</summary>
+            <pre>{job.caption}</pre>
+          </details>
+        )}
+      </div>
+    </details>
   );
 }

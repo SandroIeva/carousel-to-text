@@ -303,3 +303,64 @@ summary {
   height: 1px;
   background: var(--border);
 }
+
+.extraction-list {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.saved-extraction {
+  border-bottom: 1px solid var(--border);
+}
+.extraction-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 0;
+  list-style: none;
+}
+.extraction-summary::-webkit-details-marker {
+  display: none;
+}
+.extraction-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.extraction-title small {
+  display: block;
+  margin-top: 5px;
+}
+.extraction-status {
+  white-space: nowrap;
+}
+.chevron {
+  font-size: 20px;
+  transition: transform 0.15s;
+}
+.saved-extraction[open] > summary .chevron {
+  transform: rotate(180deg);
+}
+.extraction-content {
+  padding: 0 0 24px;
+}
+.extraction-content > .subtle-link {
+  display: inline-block;
+  margin-bottom: 22px;
+}
+.slide .section-title {
+  margin-bottom: 12px;
+}
+.slide .section-title .slide-label {
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .extraction-summary {
+    gap: 10px;
+  }
+  .extraction-status {
+    font-size: 10px;
+  }
+}

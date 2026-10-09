@@ -73,3 +73,5 @@ Bei großen Nutzerzahlen sollte der Cron-Batch durch einen dedizierten Queue-Wor
 The app also accepts `NEXT_PUBLIC_SUPABASE_PUBLISH_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` for the public key; `SUPABASE_URL` for the URL; and `SUPABASE_SERVICE_ROLE_KEY` for server operations. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` take precedence. All aliases are read only in server modules. Public keys never substitute for server secrets. `POSTGRES_*` variables are unused.
 
 Google sign-in is implemented alongside email/password. Enable the Google provider and configure OAuth credentials in Supabase as described in DEPLOYMENT.md. The Gemini API key does not enable Google login.
+
+Saved extractions appear as independently expandable post entries, newest first, titled from the first caption line or creator. Each entry contains slides, per-slide and whole-post copying, exports and terminal-job deletion. Signed-in users opening the home route return to their persisted history.
