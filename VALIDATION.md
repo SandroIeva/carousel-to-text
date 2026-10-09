@@ -73,3 +73,7 @@ Screenshot showed all OCR steps failing, not an unreadable layout. Added safe pr
 ## Expandable saved extractions
 
 Replaced selected-result/history picker with independent post accordions. Initial jobs still come from authenticated RLS queries; no local-only persistence. New jobs open automatically, existing jobs start collapsed after reload. Caption/creator titles, per-slide/all copying, exports and delete use existing protected APIs. Home now redirects authenticated users to saved results. Production build/TypeScript and HTTP smoke passed; live authenticated browser validation remains open.
+
+## Login cleanup
+
+Removed welcome label; centered confirmation note. Login now redirects already authenticated users to dashboard, complementing the authenticated home redirect. Production build and HTTP smoke passed. Reported Google session issue remains unverified; validate Supabase app callback allowlist and use the same canonical app domain throughout PKCE.

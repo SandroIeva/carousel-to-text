@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { authenticate, signInWithGoogle } from "../auth/actions";
-import { configured } from "@/lib/server";
+import { redirect } from "next/navigation";
+import { configured, identity } from "@/lib/server";
 export default async function Login({
   searchParams,
 }: {
   searchParams: Promise<{ message?: string }>;
 }) {
+  let signedIn = false;
+  if (configured()) {
+    try {
+      await identity();
+      signedIn = true;
+    } catch {
+      /* Continue to login. */
+    }
+  }
+  if (signedIn) redirect("/dashboard");
   const { message } = await searchParams;
   return (
     <main className="auth">
@@ -13,7 +24,6 @@ export default async function Login({
         ▤ Slide Scrape
       </Link>
       <section className="card">
-        <span className="eyebrow">WELCOME</span>
         <h1>Sign in to Slide Scrape.</h1>
         <p>Sign in or create an account.</p>
         {message && (
@@ -67,7 +77,7 @@ export default async function Login({
             Create account
           </button>
         </form>
-        <small>
+        <small className="auth-confirmation">
           You may receive an email confirmation link when you sign up.
         </small>
       </section>

@@ -364,3 +364,7 @@ summary {
     font-size: 10px;
   }
 }
+
+.auth .auth-confirmation {
+  text-align: center;
+}
