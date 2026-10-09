@@ -164,7 +164,11 @@ export default function Dashboard({
               className="extract-button"
               aria-label={busy ? "Starting extraction" : "Extract content"}
               title={busy ? "Starting…" : "Extract content"}
-              disabled={busy || (!guest && (!ready || count >= limit || dailyCount >= DAILY_LIMIT))}
+              disabled={
+                busy ||
+                (!guest &&
+                  (!ready || count >= limit || dailyCount >= DAILY_LIMIT))
+              }
             >
               {busy ? (
                 <span className="extract-spinner" aria-hidden="true" />
@@ -197,7 +201,10 @@ export default function Dashboard({
           <p className="notice">Extraction is not set up yet.</p>
         )}
         {!guest && dailyCount >= DAILY_LIMIT && (
-          <p className="notice">Your daily limit of 3 extractions has been reached. Try again after midnight (Europe/Berlin).</p>
+          <p className="notice">
+            Your daily limit of 3 extractions has been reached. Try again after
+            midnight (Europe/Berlin).
+          </p>
         )}
         {!guest && dailyCount < DAILY_LIMIT && count >= limit && (
           <p className="notice">You have reached your monthly limit.</p>
@@ -327,6 +334,21 @@ function extractionTitle(job: Job) {
       : "Instagram carousel";
 }
 
+function titleWithEmojiSpacing(title: string) {
+  const segments = new Intl.Segmenter("en", {
+    granularity: "grapheme",
+  }).segment(title);
+  return Array.from(segments, ({ segment }, index) =>
+    /\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3/u.test(segment) ? (
+      <span className="title-emoji" key={index}>
+        {segment}
+      </span>
+    ) : (
+      segment
+    ),
+  );
+}
+
 function SavedExtraction({
   job,
   initiallyOpen,
@@ -356,8 +378,19 @@ function SavedExtraction({
       onToggle={(e) => setOpen(e.currentTarget.open)}
     >
       <summary className="extraction-summary">
+        <span className="chevron" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="m6 9 6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
         <span className="extraction-title">
-          {extractionTitle(job)}
+          {titleWithEmojiSpacing(extractionTitle(job))}
           <small>
             {platformLabel(job.url)} ·{" "}
             {job.owner
@@ -367,10 +400,34 @@ function SavedExtraction({
             {job.slides.length} slides
           </small>
         </span>
-        <small className="extraction-status">{labels[job.status]}</small>
-        <span className="chevron" aria-hidden="true">
-          ⌄
-        </span>
+        <small className="extraction-status">
+          {job.status === "completed" && (
+            <svg
+              className="completed-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+              <path
+                d="m8 12 2.5 2.5L16 9"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+          {labels[job.status]}
+        </small>
       </summary>
       <div className="extraction-content">
         <a

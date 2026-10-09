@@ -256,7 +256,8 @@ small {
 @media (prefers-reduced-motion: reduce) {
   .input-row,
   .input-row .extract-button,
-  .extract-button svg {
+  .extract-button svg,
+  .chevron svg {
     transition: none;
   }
   .extract-spinner {
@@ -476,13 +477,33 @@ summary {
   margin-top: 5px;
 }
 .extraction-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
 }
+.title-emoji {
+  margin-inline-start: 4px;
+}
+.completed-icon {
+  flex-shrink: 0;
+  color: #15803d;
+}
 .chevron {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f4f5f8;
+  color: #626978;
+}
+.chevron svg {
   transition: transform 0.15s;
 }
-.saved-extraction[open] > summary .chevron {
+.saved-extraction[open] > summary .chevron svg {
   transform: rotate(180deg);
 }
 .extraction-content {
