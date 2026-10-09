@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <div className="site-content">{children}</div>
         <footer className="site-footer">
-          This is powered by <a href="https://i7os.com">i7OS</a>
+          Slide Scrape is powered by <a href="https://i7os.com">i7OS</a>
         </footer>
       </body>
     </html>

@@ -26,8 +26,8 @@ body {
   padding: 20px 24px;
   color: var(--muted);
   text-align: center;
-  font-size: 12px;
-  letter-spacing: 0.8px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   line-height: 1.5;
 }
