@@ -130,12 +130,17 @@ export default function Dashboard({
   return (
     <main className="simple-app">
       <header className="topbar">
-        <Link href="/" className="brand">
+        <Link href="https://www.slide-scrape.xyz" className="brand">
           Slide Scrape
         </Link>
         {guest ? (
-          <Link href="/dashboard" className="text-button">
+          <Link href="/dashboard" className="text-button signin-link">
             Sign in
+            <span className="signin-arrow" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
           </Link>
         ) : (
           <AccountDropdown email={email} avatarUrl={avatarUrl} />

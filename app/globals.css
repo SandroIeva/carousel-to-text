@@ -119,6 +119,24 @@ small {
   font-size: 13px;
   font-weight: 400;
 }
+.signin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.signin-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  transition: background 180ms ease;
+}
+.signin-link:hover .signin-arrow {
+  background: #dbeafe;
+}
 .account {
   position: relative;
 }

@@ -20,7 +20,7 @@ export default async function Login({
   const { message } = await searchParams;
   return (
     <main className="auth">
-      <Link href="/" className="brand">
+      <Link href="https://www.slide-scrape.xyz" className="brand">
         ▤ Slide Scrape
       </Link>
       <section className="card">
