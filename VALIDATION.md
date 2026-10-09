@@ -77,3 +77,10 @@ Replaced selected-result/history picker with independent post accordions. Initia
 ## Login cleanup
 
 Removed welcome label; centered confirmation note. Login now redirects already authenticated users to dashboard, complementing the authenticated home redirect. Production build and HTTP smoke passed. Reported Google session issue remains unverified; validate Supabase app callback allowlist and use the same canonical app domain throughout PKCE.
+
+
+## Multi-platform update (2026-10-09)
+
+LinkedIn (Curly) and Threads (The Mine Works) adapters added, with source matching, one-post input, a $0.009 Apify run cap and no new credentials. LinkedIn's real public document manifest was fetched successfully and yielded three ordered page images; these public metadata fetches incurred no actor run. The full authenticated Apify-to-Gemini chain remains unverified for the new platforms because the local environment has neither provider key. Existing Vercel server variables are used at runtime. No database/schema/RLS changes.
+
+Verified after implementation: 22 unit/integration tests passed, TypeScript passed, production webpack build passed, and HTTP smoke passed. The actual `linkedInDocumentPages` and `readImage` provider functions also fetched the live public page-image manifest: 3 pages; first image PNG, 194,794 bytes. This verifies document/CDN parsing and download, not an authenticated actor run or OCR.

@@ -1,7 +1,7 @@
 export type Slide = {
   position: number;
   imageUrl: string | null;
-  kind: "image" | "video";
+  kind: "image" | "video" | "text";
   status: "pending" | "completed" | "failed" | "unsupported";
   text: string;
   error?: string;

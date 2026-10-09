@@ -18,7 +18,7 @@ Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für Supabase und Vercel. Ohne Konfiguratio
 ## Implementiert
 
 - Schlichte responsive Oberfläche mit Linkfeld und slideweise gegliedertem Text, Login und Registrierung mit Supabase Auth, Bestätigungslink und Logout.
-- Instagram-URL validieren, Apify-Actor des MVPs asynchron starten, Carousel laden und Gemini 2.5 Flash-Lite pro Bild aufrufen.
+- Instagram-, LinkedIn- und Threads-Post-URLs validieren und den passenden Apify-Actor asynchron starten. Bilder und vollständige LinkedIn-Dokumentseiten werden einzeln mit dem konfigurierten Gemini-Modell transkribiert; reine Textposts ohne OCR gespeichert.
 - Originalsprache, Lesereihenfolge, Überschriften, Listen, Zahlen und Interpunktion im OCR-Prompt erhalten. Keine Übersetzung oder Zusammenfassung. Unlesbare Stellen explizit kennzeichnen.
 - Alle gelieferten Slide-Positionen erhalten, einschließlich Video- und Fehler-Platzhaltern. Maximal 25 Slides; größere Carousels werden ausdrücklich abgelehnt statt still gekürzt. Videos werden nicht transkribiert.
 - Eingeklappter eigener Verlauf (letzte 100 Extraktionen), Fortschritt, Text kopieren, Markdown/TXT/JSON-Export und Löschen abgeschlossener Extraktionen.
@@ -40,7 +40,7 @@ Das Dashboard führt einen Schritt nach dem anderen aus. Ohne aktivierten Schedu
 
 `APIFY_TOKEN`, `GEMINI_API_KEY`, `SUPABASE_SECRET_KEY` und `CRON_SECRET` stehen nur in Server-Modulen mit `server-only`. Nur Supabase-URL und Publishable-Key dürfen `NEXT_PUBLIC_` verwenden. Privilegierte RPCs sind für `anon`, `authenticated` und `PUBLIC` gesperrt; ausschließlich `service_role` darf sie ausführen. Alle RPCs nutzen SECURITY INVOKER, keine SECURITY DEFINER-Funktionen.
 
-Medienabrufe erlauben ausschließlich HTTPS auf `cdninstagram.com` und `fbcdn.net` inklusive echter Subdomains, keine Credentials/abweichenden Ports oder Redirects. Maximal 8 MB werden gestreamt; nur JPEG/PNG/WebP. API-URLs sind serverseitig festgelegt. Antworten mit OCR-Abbruch oder fehlendem Inhalt werden als Fehler behandelt.
+Medienabrufe erlauben ausschließlich HTTPS auf `cdninstagram.com`, `fbcdn.net` und `media.licdn.com` inklusive echter Subdomains, keine Credentials/abweichenden Ports oder Redirects. Maximal 8 MB werden gestreamt; nur JPEG/PNG/WebP. API-URLs sind serverseitig festgelegt. Antworten mit OCR-Abbruch oder fehlendem Inhalt werden als Fehler behandelt.
 
 Extrahierte Inhalte werden als Text angezeigt, nicht als HTML interpretiert. Mutierende API-Routen prüfen Origin und Session. Private Antworten sind `no-store`. Ursprungstexte und Bilder werden als Daten behandelt, nicht als Anweisungen ausgeführt.
 
@@ -75,3 +75,19 @@ The app also accepts `NEXT_PUBLIC_SUPABASE_PUBLISH_KEY`, `SUPABASE_PUBLISHABLE_K
 Google sign-in is implemented alongside email/password. Enable the Google provider and configure OAuth credentials in Supabase as described in DEPLOYMENT.md. The Gemini API key does not enable Google login.
 
 Saved extractions appear as independently expandable post entries, newest first, titled from the first caption line or creator. Each entry contains slides, per-slide and whole-post copying, exports and terminal-job deletion. Signed-in users opening the home route return to their persisted history.
+
+## LinkedIn and Threads
+
+No extra API key is required. Existing `APIFY_TOKEN` and `GEMINI_API_KEY` remain server-only. Defaults:
+
+- Instagram: `themineworks~instagram-post-scraper` (`APIFY_ACTOR`).
+- LinkedIn: `curly~linkedin-post-scraper` (`APIFY_LINKEDIN_ACTOR`). Public author-bearing `/posts/...-activity-...` URLs only; `/feed/update/` aliases are explicitly rejected because this actor does not support them.
+- Threads: `themineworks~threads-scraper` (`APIFY_THREADS_ACTOR`), single-post mode, `maxPosts: 1`. Both threads.net and threads.com links are accepted. Vitalue was not selected: its input schema describes post URLs as comment targets rather than full post retrieval.
+
+Dataset rows must match the submitted post URL; quoted/parent posts and metadata rows are not substituted. Native post text is kept as the original caption, with its own copy action, and included in full-post copying. Text-only posts complete immediately without a Gemini call. Media text uses the same per-slide pipeline, history, quotas, deletion and exports as Instagram. Videos remain explicitly unsupported.
+
+For LinkedIn documents, follow the `media[].url` master manifest, select its highest-resolution `perResolutions[].imageManifestUrl`, then read the ordered `pages[]`. This contract was observed on a public three-page LinkedIn document. Only HTTPS media.licdn.com is allowed, without redirects, credentials or non-default ports. Manifest responses are capped at 1 MB; documents and combined media at 25 pages. A missing/full-document access failure is shown clearly; never silently extract just the cover. PDF-only sources or changed manifest schemas are not supported by this adapter yet.
+
+Each Apify run sends `maxTotalChargeUsd=0.009`, `timeout=300`, `restartOnError=false`. This caps the scraper run, not Gemini, taxes, hosting, subscriptions or multiple runs caused by an interrupted start. The app does not automatically purchase any provider credit package. Actor overrides must retain the documented input/output contracts and pricing.
+
+Live authenticated actor runs and Gemini calls for these new platforms require the Vercel environment. They were not executed locally because local keys are absent. Mock integration tests exercise actor routing, budget parameters, post matching, manifest resolution, SSRF/size limits, text-only completion, and exports; Instagram regression tests remain passing. No database migration is needed: platform is derived from the saved URL and slides are already JSON.

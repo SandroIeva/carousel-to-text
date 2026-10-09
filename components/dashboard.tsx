@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { terminal, type Job } from "@/lib/types";
+import { platformFor, platformLabel } from "@/lib/core";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
   scraping: "Loading slides",
@@ -137,10 +138,10 @@ export default function Dashboard({
       </header>
       <section className="composer">
         <h1>Link in. Content out.</h1>
-        <p>Paste an Instagram link. Get the text, slide by slide.</p>
+        <p>Paste an Instagram, LinkedIn or Threads link. Get the content.</p>
         <form onSubmit={start}>
           <label htmlFor="instagram" className="sr-only">
-            Instagram link
+            Post link
           </label>
           <div className="input-row">
             <input
@@ -152,12 +153,12 @@ export default function Dashboard({
                 setUrl(e.target.value);
                 requestId.current = null;
               }}
-              placeholder="Paste an Instagram link…"
+              placeholder="Paste a post link…"
             />
             <button
               className="extract-button"
-              aria-label={busy ? "Starting extraction" : "Extract carousel"}
-              title={busy ? "Starting…" : "Extract carousel"}
+              aria-label={busy ? "Starting extraction" : "Extract content"}
+              title={busy ? "Starting…" : "Extract content"}
               disabled={busy || (!guest && (!ready || count >= limit))}
             >
               {busy ? (
@@ -350,7 +351,10 @@ function SavedExtraction({
         <span className="extraction-title">
           {extractionTitle(job)}
           <small>
-            {job.owner ? `@${job.owner} · ` : ""}
+            {platformLabel(job.url)} ·{" "}
+            {job.owner
+              ? `${platformFor(job.url) === "linkedin" ? "" : "@"}${job.owner} · `
+              : ""}
             {new Date(job.created_at).toLocaleDateString("en-GB")} ·{" "}
             {job.slides.length} slides
           </small>
@@ -381,7 +385,9 @@ function SavedExtraction({
           <article className="slide" key={s.position}>
             <div className="section-title">
               <small className="slide-label">
-                Slide {String(s.position).padStart(2, "0")}
+                {s.kind === "text"
+                  ? "Post text"
+                  : `Slide ${String(s.position).padStart(2, "0")}`}
               </small>
               {s.status === "completed" && (
                 <button
@@ -401,10 +407,18 @@ function SavedExtraction({
               className="secondary"
               onClick={() =>
                 copy(
-                  job.slides
-                    .map(
-                      (s) => `Slide ${s.position}\n${s.text || s.error || ""}`,
-                    )
+                  [
+                    job.caption && !job.slides.some((s) => s.kind === "text")
+                      ? `Post text\n${job.caption}`
+                      : "",
+                    job.slides
+                      .map(
+                        (s) =>
+                          `Slide ${s.position}\n${s.text || s.error || ""}`,
+                      )
+                      .join("\n\n"),
+                  ]
+                    .filter(Boolean)
                     .join("\n\n"),
                   "all",
                 )
@@ -429,9 +443,15 @@ function SavedExtraction({
             </button>
           </div>
         )}
-        {job.caption && (
+        {job.caption && !job.slides.some((s) => s.kind === "text") && (
           <details className="caption">
-            <summary>Original caption</summary>
+            <summary>Original post text</summary>
+            <button
+              className="text-button"
+              onClick={() => copy(job.caption || "", "caption")}
+            >
+              {copied === "caption" ? "Copied" : "Copy post text"}
+            </button>
             <pre>{job.caption}</pre>
           </details>
         )}

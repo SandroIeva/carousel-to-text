@@ -1,5 +1,5 @@
 import "server-only";
-import { validateImageUrl } from "./core";
+import { normalizeUrl, platformFor, validateImageUrl } from "./core";
 import { ProviderFailure, providerHttpFailure } from "./provider-error";
 const APIFY = "https://api.apify.com/v2";
 async function json(url: string, init: RequestInit = {}, timeout = 25000) {
@@ -20,21 +20,41 @@ async function json(url: string, init: RequestInit = {}, timeout = 25000) {
   return r.json();
 }
 export async function startApify(url: string) {
+  const platform = platformFor(url);
   const actor =
-    process.env.APIFY_ACTOR || "themineworks~instagram-post-scraper";
+    platform === "linkedin"
+      ? process.env.APIFY_LINKEDIN_ACTOR || "curly~linkedin-post-scraper"
+      : platform === "threads"
+        ? process.env.APIFY_THREADS_ACTOR || "themineworks~threads-scraper"
+        : process.env.APIFY_ACTOR || "themineworks~instagram-post-scraper";
   if (!/^[\w~-]+$/.test(actor)) throw new Error("Invalid actor.");
-  const obj = await json(`${APIFY}/acts/${actor}/runs?timeout=300&memory=256`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.APIFY_TOKEN}`,
-      "Content-Type": "application/json",
+  const input =
+    platform === "threads"
+      ? {
+          mode: "post",
+          postUrls: [url],
+          maxPosts: 1,
+          includeReplies: true,
+          includeReposts: true,
+        }
+      : platform === "linkedin"
+        ? { postUrls: [url] }
+        : {
+            postUrls: [url],
+            usernames: [],
+            proxyConfiguration: { useApifyProxy: true },
+          };
+  const obj = await json(
+    `${APIFY}/acts/${actor}/runs?timeout=300&memory=256&maxTotalChargeUsd=0.009&restartOnError=false`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APIFY_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
     },
-    body: JSON.stringify({
-      postUrls: [url],
-      usernames: [],
-      proxyConfiguration: { useApifyProxy: true },
-    }),
-  });
+  );
   if (!obj.data?.id || !obj.data?.defaultDatasetId)
     throw new Error("Could not start the actor.");
   return obj.data as { id: string; defaultDatasetId: string };
@@ -51,11 +71,154 @@ export async function apifyPost(dataset: string, url: string) {
     `${APIFY}/datasets/${encodeURIComponent(dataset)}/items?format=json&clean=true&limit=10`,
     { headers: { Authorization: `Bearer ${process.env.APIFY_TOKEN}` } },
   );
-  const code = new URL(url).pathname.split("/")[2];
   if (!Array.isArray(rows)) throw new Error("Invalid dataset.");
-  const post = rows.find((r) => r && r.shortCode === code && r.type);
-  if (!post) throw new Error("No matching public post found.");
-  return post;
+  const platform = platformFor(url);
+  const code = new URL(url).pathname.split("/").filter(Boolean).at(-1);
+  const post = rows.find((r) => {
+    if (!r || typeof r !== "object" || r._type === "info") return false;
+    if (platform === "instagram") return r.shortCode === code && r.type;
+    const source = platform === "linkedin" ? r.post_url : r.url;
+    try {
+      return normalizeUrl(source) === normalizeUrl(url);
+    } catch {
+      return false;
+    }
+  });
+  if (!post)
+    throw new ProviderFailure(
+      "No matching public post found. Check that the post is public and its link is correct.",
+    );
+  if (platform === "instagram") return post;
+  if (platform === "threads") {
+    const media = Array.isArray(post.media_urls) ? post.media_urls : [];
+    return {
+      ownerUsername: String(post.username || "unknown"),
+      caption: String(post.text || ""),
+      textOnly: !media.length,
+      childPosts: media.map((source: unknown) => ({
+        displayUrl: source,
+        type:
+          post.media_type === "video" ||
+          (typeof source === "string" && /\.mp4(?:\?|$)/i.test(source))
+            ? "Video"
+            : "Image",
+      })),
+    };
+  }
+  const media = Array.isArray(post.media) ? post.media : [];
+  if (media.length > 25)
+    throw new ProviderFailure(
+      "Posts with more than 25 media items are not supported yet.",
+    );
+  const childPosts: Record<string, unknown>[] = [];
+  for (const item of media) {
+    if (!item || typeof item !== "object")
+      throw new ProviderFailure("LinkedIn returned invalid media.");
+    if (item.type === "document") {
+      // Resolve the complete viewer manifest, never use its cover thumbnail as a carousel.
+      const pages = await linkedInDocumentPages(item.url);
+      childPosts.push(...pages.map((displayUrl) => ({ displayUrl })));
+    } else {
+      childPosts.push({
+        displayUrl: item.url,
+        type: item.type === "video" ? "Video" : "Image",
+      });
+    }
+    if (childPosts.length > 25)
+      throw new ProviderFailure(
+        "Posts with more than 25 slides are not supported yet.",
+      );
+  }
+  if (post.content_type === "document" && !childPosts.length)
+    throw new ProviderFailure(
+      "LinkedIn did not expose the full document. No cover-only extraction was saved.",
+    );
+  return {
+    ownerUsername: String(post.author?.name || "unknown"),
+    caption: String(post.text || ""),
+    textOnly: !childPosts.length,
+    childPosts,
+  };
+}
+async function linkedInJson(value: unknown) {
+  if (
+    typeof value !== "string" ||
+    new URL(validateImageUrl(value)).hostname !== "media.licdn.com"
+  )
+    throw new ProviderFailure(
+      "LinkedIn document source is missing or unsupported.",
+    );
+  const r = await fetch(value, {
+    redirect: "error",
+    cache: "no-store",
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!r.ok)
+    throw new ProviderFailure(
+      `LinkedIn document download failed (HTTP ${r.status}).`,
+    );
+  if (!r.headers.get("content-type")?.includes("json"))
+    throw new ProviderFailure(
+      "LinkedIn did not return a supported document manifest.",
+    );
+  if (!r.body)
+    throw new ProviderFailure("LinkedIn document manifest is empty.");
+  const reader = r.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      bytes += value.length;
+      if (bytes > 1000000)
+        throw new ProviderFailure("LinkedIn document manifest exceeds 1 MB.");
+      chunks.push(value);
+    }
+  } finally {
+    await reader.cancel();
+  }
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
+export async function linkedInDocumentPages(url: unknown): Promise<string[]> {
+  try {
+    let manifest = await linkedInJson(url);
+    if (Array.isArray(manifest.perResolutions)) {
+      const resolutions = manifest.perResolutions.filter(
+        (r: { width?: unknown; imageManifestUrl?: unknown }) =>
+          typeof r.width === "number" && typeof r.imageManifestUrl === "string",
+      );
+      resolutions.sort(
+        (a: { width: number }, b: { width: number }) => b.width - a.width,
+      );
+      if (!resolutions.length)
+        throw new ProviderFailure("LinkedIn document has no page images.");
+      manifest = await linkedInJson(resolutions[0].imageManifestUrl);
+    }
+    if (!Array.isArray(manifest.pages) || !manifest.pages.length)
+      throw new ProviderFailure(
+        "LinkedIn document pages are unavailable. A cover image is not sufficient.",
+      );
+    if (manifest.pages.length > 25)
+      throw new ProviderFailure(
+        "Documents with more than 25 pages are not supported yet.",
+      );
+    return manifest.pages.map((page: unknown) => {
+      if (
+        typeof page !== "string" ||
+        new URL(validateImageUrl(page)).hostname !== "media.licdn.com"
+      )
+        throw new ProviderFailure(
+          "LinkedIn returned an unsupported document page.",
+        );
+      return page;
+    });
+  } catch (e) {
+    if (e instanceof ProviderFailure) throw e;
+    throw new ProviderFailure(
+      "Could not load the complete LinkedIn document. Please try a new extraction.",
+    );
+  }
 }
 export async function readImage(url: string) {
   const source = validateImageUrl(url);

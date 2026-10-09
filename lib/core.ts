@@ -1,24 +1,65 @@
 import type { Job, Slide } from "./types";
 export function normalizeUrl(input: unknown) {
   if (typeof input !== "string" || input.length > 2048)
-    throw new Error("Please enter a valid Instagram link.");
+    throw new Error(
+      "Please enter an Instagram, LinkedIn or Threads post link.",
+    );
   let u: URL;
   try {
     u = new URL(input.trim());
   } catch {
     throw new Error("Invalid link.");
   }
-  const match = u.pathname.match(/^\/(p|reel)\/([A-Za-z0-9_-]{1,100})\/?$/);
   if (
     !["https:", "http:"].includes(u.protocol) ||
-    !["instagram.com", "www.instagram.com"].includes(u.hostname) ||
     u.username ||
     u.password ||
-    u.port ||
-    !match
+    u.port
   )
-    throw new Error("Please use a public Instagram post link.");
-  return `https://www.instagram.com/${match[1]}/${match[2]}/`;
+    throw new Error("Please use a public post link.");
+  if (["instagram.com", "www.instagram.com"].includes(u.hostname)) {
+    const match = u.pathname.match(/^\/(p|reel)\/([A-Za-z0-9_-]{1,100})\/?$/);
+    if (match) return `https://www.instagram.com/${match[1]}/${match[2]}/`;
+  }
+  if (/^(?:www\.|[a-z]{2}\.)?linkedin\.com$/.test(u.hostname)) {
+    // Curly requires the public, author-bearing /posts/ URL, not feed aliases.
+    const match = u.pathname.match(
+      /^\/posts\/([A-Za-z0-9_-]+-activity-\d{10,25}-[A-Za-z0-9_-]+)\/?$/,
+    );
+    if (match) return `https://www.linkedin.com/posts/${match[1]}`;
+    throw new Error(
+      "Use the LinkedIn /posts/ link copied from the public post, not a /feed/update/ link.",
+    );
+  }
+  if (
+    [
+      "threads.com",
+      "www.threads.com",
+      "threads.net",
+      "www.threads.net",
+    ].includes(u.hostname)
+  ) {
+    const match = u.pathname.match(
+      /^\/@([A-Za-z0-9._]{1,100})\/post\/([A-Za-z0-9_-]{1,100})\/?$/,
+    );
+    if (match) return `https://www.threads.com/@${match[1]}/post/${match[2]}`;
+  }
+  throw new Error(
+    "Please use a public Instagram, LinkedIn or Threads post link.",
+  );
+}
+export function platformFor(url: string): "instagram" | "linkedin" | "threads" {
+  const host = new URL(normalizeUrl(url)).hostname;
+  return host === "www.linkedin.com"
+    ? "linkedin"
+    : host === "www.threads.com"
+      ? "threads"
+      : "instagram";
+}
+export function platformLabel(url: string) {
+  return { instagram: "Instagram", linkedin: "LinkedIn", threads: "Threads" }[
+    platformFor(url)
+  ];
 }
 export function validateImageUrl(value: string) {
   const u = new URL(value);
@@ -27,7 +68,7 @@ export function validateImageUrl(value: string) {
     u.username ||
     u.password ||
     u.port ||
-    !["cdninstagram.com", "fbcdn.net"].some(
+    !["cdninstagram.com", "fbcdn.net", "media.licdn.com"].some(
       (h) => u.hostname === h || u.hostname.endsWith("." + h),
     )
   )
@@ -36,6 +77,20 @@ export function validateImageUrl(value: string) {
 }
 type Row = Record<string, unknown>;
 export function parseSlides(post: Row): Slide[] {
+  if (
+    post.textOnly === true &&
+    typeof post.caption === "string" &&
+    post.caption.trim()
+  )
+    return [
+      {
+        position: 1,
+        imageUrl: null,
+        kind: "text",
+        status: "completed",
+        text: post.caption,
+      },
+    ];
   let rows: unknown[] = [];
   if (Array.isArray(post.childPosts) && post.childPosts.length)
     rows = post.childPosts;
@@ -112,7 +167,7 @@ export function exportJob(
       extension: "json",
     };
   const md =
-    `# Instagram Carousel\n\nSource: ${job.url}\nCreator: @${job.owner || "unknown"}\nSlides: ${job.slides.length}\n` +
+    `# ${platformLabel(job.url)} Content\n\nSource: ${job.url}\nCreator: ${job.owner || "unknown"}\nSlides: ${job.slides.length}\n` +
     job.slides
       .map((s) => `\n---\n\n## Slide ${s.position}\n\n${slideText(s)}\n`)
       .join("") +
@@ -122,7 +177,7 @@ export function exportJob(
   if (format === "txt")
     return {
       body:
-        `Instagram Carousel\nSource: ${job.url}\nCreator: @${job.owner || "unknown"}\n\n` +
+        `${platformLabel(job.url)} Content\nSource: ${job.url}\nCreator: ${job.owner || "unknown"}\n\n` +
         job.slides
           .map(
             (s) =>

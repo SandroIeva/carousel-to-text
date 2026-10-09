@@ -28,9 +28,12 @@ export async function advanceJob(
         throw new Error("Scraper timeout");
       if (run.status === "SUCCEEDED") {
         const post = await providers.apifyPost(job.dataset_id!, job.url);
+        const slides = parseSlides(post);
         patch = {
-          status: "processing",
-          slides: parseSlides(post),
+          status: slides.every((s) => s.status === "completed")
+            ? "completed"
+            : "processing",
+          slides,
           owner: String(post.ownerUsername || "unknown"),
           caption: String(post.caption || ""),
         };
@@ -65,11 +68,13 @@ export async function advanceJob(
         error: !pending && !good ? "No slides could be transcribed." : null,
       };
     }
-  } catch {
+  } catch (error) {
     patch = {
       status: "failed",
       error:
-        "Extraction failed. Please check the public link and server configuration.",
+        error instanceof ProviderFailure
+          ? error.message
+          : "Extraction failed. Please check the public link and server configuration.",
     };
   }
   return patch;
