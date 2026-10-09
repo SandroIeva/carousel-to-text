@@ -295,7 +295,7 @@ small {
   width: 22px;
 }
 .loader-reading {
-  width: 16px;
+  width: 13.6px;
 }
 .loader-status {
   width: 14px;
@@ -305,13 +305,13 @@ small {
 .processing-shimmer {
   display: inline-block;
   color: var(--muted);
-  background: linear-gradient(100deg, #777 35%, #fff 50%, #777 65%);
-  background-size: 250% 100%;
+  background: linear-gradient(100deg, #777 20%, #aaa 38%, #e5e5e5 50%, #aaa 62%, #777 80%);
+  background-size: 300% 100%;
   background-position: 100% 0;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: processing-shimmer 2s ease-in-out infinite;
+  animation: processing-shimmer 3.5s ease-in-out infinite;
 }
 @keyframes processing-shimmer {
   to { background-position: -100% 0; }
@@ -327,7 +327,7 @@ small {
 .extraction-loading {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 9px;
   margin: 20px 0;
   font-size: 13px;
 }
