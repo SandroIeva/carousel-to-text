@@ -505,7 +505,7 @@ function SavedExtraction({
             <span className="loader loader-reading" aria-hidden="true" />
             <span>
             {job.status === "processing"
-              ? `Reading slide ${Math.min(job.slides.filter((s) => s.status !== "pending").length + 1, job.slides.length)} of ${job.slides.length}…`
+              ? `Reading slide ${Math.min(job.slides.filter((s) => s.status !== "pending").length + 1, job.slides.length)} of ${job.slides.length}`
               : `Loading ${platformLabel(job.url)} post…`}
             </span>
           </div>
