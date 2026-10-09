@@ -3,7 +3,7 @@ export function providerHttpFailure(
   provider: "Gemini" | "Apify" | "Image",
   status: number,
 ) {
-  if (provider === "Image") return new ProviderFailure(`Image HTTP ${status}: Could not download the Instagram image. The media URL may have expired or access may be blocked. Please try a new extraction.`);
+  if (provider === "Image") return new ProviderFailure(`Image HTTP ${status}: Could not download the image. The media URL may have expired or access may be blocked. Please try a new extraction.`);
   const reason =
     status === 429
       ? "Rate limit or quota exceeded. Check provider usage and billing; this does not necessarily require payment."

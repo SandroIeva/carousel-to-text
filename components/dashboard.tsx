@@ -331,7 +331,9 @@ function extractionTitle(job: Job) {
       : caption
     : job.owner
       ? `@${job.owner}`
-      : "Instagram carousel";
+      : platformFor(job.url) === "instagram"
+        ? "Instagram carousel"
+        : `${platformLabel(job.url)} post`;
 }
 
 function titleWithEmojiSpacing(title: string) {
