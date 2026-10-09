@@ -8,7 +8,10 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="site-content">{children}</div>
+        <footer className="site-footer">Powered by i7OS</footer>
+      </body>
     </html>
   );
 }
