@@ -61,3 +61,7 @@ Added Google OAuth server action using the SSR client with PKCE and a fixed APP_
 ## Vercel origin validation fix
 
 The old check accepted only APP_URL; mismatched deployment addresses caused HTTP 403 before URL parsing. Exact Vercel project, deployment and branch origins are now accepted alongside APP_URL, while missing/null/foreign/spoofed origins remain denied. The reported Instagram link normalizes correctly. All 16 tests, TypeScript production build and HTTP smoke passed. Actual production environment values and authenticated extraction still require live verification.
+
+## Origin diagnostics
+
+Repeated production rejection remains unresolved. Error responses now show only parsed public browser/configured origins or missing/invalid configuration indicators. No credentials, query strings or raw environment values are reflected. The 16 tests, including diagnostic assertions, and production build passed. Need the resulting production message to identify the live mismatch.

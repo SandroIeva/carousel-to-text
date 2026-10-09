@@ -72,11 +72,23 @@ export function sameOrigin(req: Request) {
     }
   }
   const origin = req.headers.get("origin");
-  if (!origin || !allowed.has(origin))
+  if (!origin || !allowed.has(origin)) {
+    let browserOrigin = "missing Origin header";
+    if (origin) {
+      try {
+        const parsed = new URL(origin);
+        browserOrigin = ["http:", "https:"].includes(parsed.protocol)
+          ? parsed.origin
+          : "invalid Origin header";
+      } catch {
+        browserOrigin = "invalid Origin header";
+      }
+    }
     throw new HttpError(
-      "Request not allowed. Please check the app URL configuration.",
+      `Request not allowed. Browser origin: ${browserOrigin}. Configured app origins: ${[...allowed].join(", ") || "none (APP_URL or Vercel system variables missing/invalid)"}.`,
       403,
     );
+  }
 }
 export function errorResponse(error: unknown) {
   return Response.json(

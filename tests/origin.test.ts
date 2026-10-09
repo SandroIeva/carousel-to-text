@@ -38,6 +38,14 @@ test("origin validation accepts exact configured Vercel domains and rejects fore
       "http://carousel-to-text.vercel.app",
     ])
       assert.throws(() => sameOrigin(req(origin)), /Request not allowed/);
+    assert.throws(
+      () => sameOrigin(req()),
+      /Browser origin: missing Origin header/,
+    );
+    assert.throws(
+      () => sameOrigin(req("https://evil.example")),
+      /Configured app origins: http:\/\/localhost:3000, https:\/\/carousel-to-text.vercel.app/,
+    );
     process.env.APP_URL = "invalid";
     assert.doesNotThrow(() =>
       sameOrigin(req("https://carousel-to-text.vercel.app")),
