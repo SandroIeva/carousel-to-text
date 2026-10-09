@@ -105,3 +105,11 @@ Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters
 - HTTPS LinkedIn-only fetch, redirects disabled, 15s timeout, 1MB HTML limit, canonical host and matching author/post slug validated.
 - Actual reported Ben Matthews URL resolved successfully with the application resolver to activity ID 7477337555148046336. Typecheck and 28 tests passed. No authenticated Apify/Gemini end-to-end run was performed in this workspace.
 
+# Instagram budget regression — 2026-10-09
+
+- Actual failed run OUTPUT reported `stopped_early: charge_limit`, no GraphQL calls or post lookups. The 0.009 USD cap triggered the actor's guard immediately after its 0.005 USD start charge.
+- Successful earlier run used the same actor build 0.1.3 and charged 0.00679 USD (one start plus one post). This was not a public-post or dataset-matching failure.
+- Instagram now uses a technical 0.01 USD ceiling and `maxItems=1`; single-post input remains enforced. Other platforms retain 0.009 USD. Gemini is separately billed.
+- Empty dataset diagnostics inspect the run's OUTPUT summary and report budget stops accurately without exposing arbitrary provider responses.
+- Typecheck and 28 tests passed, including Instagram budget/item count and budget error handling. End-to-end rerun needs deployed credentials; no paid retry made during diagnosis.
+

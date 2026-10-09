@@ -9,6 +9,8 @@ test("provider requests: secrets in headers, source matching, image bounds and i
     globalThis.fetch = async (input, init) => {
       const url = String(input);
       assert.ok(!url.includes("test-apify-secret"));
+      assert.equal(new URL(url).searchParams.get("maxTotalChargeUsd"), "0.01");
+      assert.equal(new URL(url).searchParams.get("maxItems"), "1");
       assert.equal(
         (init?.headers as Record<string, string>).Authorization,
         "Bearer test-apify-secret",
@@ -37,6 +39,10 @@ test("provider requests: secrets in headers, source matching, image bounds and i
     await assert.rejects(() =>
       apifyPost("dataset", "https://www.instagram.com/p/missing/"),
     );
+    globalThis.fetch = async (input) => String(input).includes("/records/OUTPUT")
+      ? Response.json({ stopped_early: "charge_limit" })
+      : Response.json([]);
+    await assert.rejects(() => apifyPost("dataset", "https://www.instagram.com/p/abc/", "store"), /run budget/);
     globalThis.fetch = async () =>
       new Response("bad", { headers: { "content-type": "text/html" } });
     await assert.rejects(

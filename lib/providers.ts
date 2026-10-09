@@ -45,7 +45,7 @@ export async function startApify(url: string) {
             proxyConfiguration: { useApifyProxy: true },
           };
   const obj = await json(
-    `${APIFY}/acts/${actor}/runs?timeout=300&memory=256&maxTotalChargeUsd=0.009&restartOnError=false`,
+    `${APIFY}/acts/${actor}/runs?timeout=300&memory=256&maxTotalChargeUsd=${platform === "instagram" ? "0.01&maxItems=1" : "0.009"}&restartOnError=false`,
     {
       method: "POST",
       headers: {
@@ -66,7 +66,7 @@ export async function apifyRun(id: string) {
     })
   ).data;
 }
-export async function apifyPost(dataset: string, url: string) {
+export async function apifyPost(dataset: string, url: string, storeId?: string) {
   const rows = await json(
     `${APIFY}/datasets/${encodeURIComponent(dataset)}/items?format=json&clean=true&limit=10`,
     { headers: { Authorization: `Bearer ${process.env.APIFY_TOKEN}` } },
@@ -84,6 +84,16 @@ export async function apifyPost(dataset: string, url: string) {
       return false;
     }
   });
+  if (!post && storeId) {
+    let output;
+    try {
+      output = await json(`${APIFY}/key-value-stores/${encodeURIComponent(storeId)}/records/OUTPUT`, {
+        headers: { Authorization: `Bearer ${process.env.APIFY_TOKEN}` },
+      });
+    } catch { /* Missing summaries must not obscure the original extraction error. */ }
+    if (output?.stopped_early === "charge_limit")
+      throw new ProviderFailure("The scraper stopped at its run budget before returning this post. Please check the server's scraper budget configuration.");
+  }
   if (!post)
     throw new ProviderFailure(
       "No matching public post found. Check that the post is public and its link is correct.",

@@ -27,7 +27,7 @@ export async function advanceJob(
       )
         throw new Error("Scraper timeout");
       if (run.status === "SUCCEEDED") {
-        const post = await providers.apifyPost(job.dataset_id!, job.url);
+        const post = await providers.apifyPost(job.dataset_id!, job.url, run.defaultKeyValueStoreId);
         const slides = parseSlides(post);
         patch = {
           status: slides.every((s) => s.status === "completed")
