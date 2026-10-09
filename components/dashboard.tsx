@@ -503,7 +503,7 @@ function SavedExtraction({
         </a>
         {!terminal(job.status) && (
           <div className="extraction-loading" role="status">
-            <span className="loader" aria-hidden="true" />
+            <span className="loader loader-reading" aria-hidden="true" />
             <span>
             {job.status === "processing"
               ? `Reading slide ${Math.min(job.slides.filter((s) => s.status !== "pending").length + 1, job.slides.length)} of ${job.slides.length}…`
@@ -531,8 +531,7 @@ function SavedExtraction({
             </div>
             {s.status === "pending" ? (
               <div className="slide-processing" role="status">
-                <span className="loader loader-slide" aria-hidden="true" />
-                <span>Processing…</span>
+                <span className="processing-shimmer">Processing…</span>
               </div>
             ) : (
               <pre>{s.text || s.error || "No text found."}</pre>

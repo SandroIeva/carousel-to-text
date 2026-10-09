@@ -294,12 +294,27 @@ small {
 .loader-button {
   width: 22px;
 }
-.loader-slide {
-  width: 20px;
+.loader-reading {
+  width: 16px;
 }
 .loader-status {
-  width: 24px;
+  width: 14px;
+  margin-inline-start: 5px;
   margin-inline-end: 15px;
+}
+.processing-shimmer {
+  display: inline-block;
+  color: var(--muted);
+  background: linear-gradient(100deg, #777 35%, #fff 50%, #777 65%);
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: processing-shimmer 2s ease-in-out infinite;
+}
+@keyframes processing-shimmer {
+  to { background-position: -100% 0; }
 }
 .slide-processing {
   display: flex;
@@ -330,6 +345,11 @@ small {
   }
   .loader {
     animation: none;
+  }
+  .processing-shimmer {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
   }
 }
 .composer .notice {
