@@ -86,3 +86,5 @@ Create a Google OAuth client of type Web application in Google Cloud / Google Au
 Set Supabase Site URL to `https://carousel-to-text.vercel.app` and allow `https://carousel-to-text.vercel.app/auth/callback` (plus the local callback when needed). Keep APP_URL equal to the app origin. The server action initiates PKCE OAuth via the existing SSR client and callback exchanges the code for a cookie session. OAuth cancellation returns an English login error. Google sign-in creates an account automatically when needed. Only the normal sign-in scopes are requested.
 
 Provider credentials and a real Google account are required for live end-to-end verification; this has not yet been performed.
+
+Origin checks allow exact origins from APP_URL and Vercel system variables VERCEL_PROJECT_PRODUCTION_URL, VERCEL_URL and VERCEL_BRANCH_URL. Request Host/forwarded headers do not authorize origins. Keep APP_URL=https://carousel-to-text.vercel.app for production authentication redirects. If system variables are disabled, enable Automatically expose System Environment Variables or configure APP_URL correctly.

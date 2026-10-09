@@ -49,8 +49,34 @@ export async function identity() {
   return { db, user: data.user };
 }
 export function sameOrigin(req: Request) {
-  if (req.headers.get("origin") !== new URL(process.env.APP_URL!).origin)
-    throw new HttpError("Request not allowed.", 403);
+  const allowed = new Set<string>();
+  const candidates = [
+    process.env.APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL &&
+      `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
+    process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`,
+    process.env.VERCEL_BRANCH_URL && `https://${process.env.VERCEL_BRANCH_URL}`,
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      const url = new URL(candidate);
+      if (
+        ["http:", "https:"].includes(url.protocol) &&
+        !url.username &&
+        !url.password
+      )
+        allowed.add(url.origin);
+    } catch {
+      /* Ignore malformed configuration; never trust request headers as configuration. */
+    }
+  }
+  const origin = req.headers.get("origin");
+  if (!origin || !allowed.has(origin))
+    throw new HttpError(
+      "Request not allowed. Please check the app URL configuration.",
+      403,
+    );
 }
 export function errorResponse(error: unknown) {
   return Response.json(

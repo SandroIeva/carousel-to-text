@@ -57,3 +57,7 @@ Session and proxy configuration share server-only alias resolution. Publishable 
 ## Google login
 
 Added Google OAuth server action using the SSR client with PKCE and a fixed APP_URL callback. Existing callback exchanges the code for a session; denied OAuth returns a generic English message without reflecting provider input. Login button, production build/TypeScript, and HTTP checks including OAuth cancellation passed. Real Google sign-in remains untested until the provider is enabled with OAuth client credentials.
+
+## Vercel origin validation fix
+
+The old check accepted only APP_URL; mismatched deployment addresses caused HTTP 403 before URL parsing. Exact Vercel project, deployment and branch origins are now accepted alongside APP_URL, while missing/null/foreign/spoofed origins remain denied. The reported Instagram link normalizes correctly. All 16 tests, TypeScript production build and HTTP smoke passed. Actual production environment values and authenticated extraction still require live verification.
