@@ -279,7 +279,24 @@ function AccountDropdown({
             {email}
           </p>
           <form action={signOut}>
-            <button className="account-signout">Sign out</button>
+            <button className="account-signout">
+              <span>Sign out</span>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9 5H5v14h4M10 12h10M16 8l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
           </form>
         </div>
       )}
