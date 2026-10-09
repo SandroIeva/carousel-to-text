@@ -1,0 +1,40 @@
+{
+  "name": "carousel-saas",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
+    "test:ui": "playwright test",
+    "test:http": "node tests/http-smoke.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.117.3",
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.64.0",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "prettier": "3.9.9",
+    "supabase": "2.81.3",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
