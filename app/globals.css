@@ -183,8 +183,8 @@ small {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 88px;
-  padding: 12px;
+  min-height: 74px;
+  padding: 9px;
   border: 2px solid transparent;
   border-radius: 999px;
   background: #f4f5f8;
@@ -203,7 +203,7 @@ small {
 }
 .input-row input {
   flex: 1;
-  padding: 16px 14px;
+  padding: 12px 14px;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -216,9 +216,9 @@ small {
   outline: none;
 }
 .input-row .extract-button {
-  flex: 0 0 60px;
-  width: 60px;
-  height: 60px;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -409,8 +409,8 @@ summary {
     padding-top: 58px;
   }
   .input-row {
-    min-height: 76px;
-    padding: 9px;
+    min-height: 70px;
+    padding: 7px;
     gap: 4px;
   }
   .input-row input {
