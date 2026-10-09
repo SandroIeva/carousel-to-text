@@ -14,7 +14,7 @@ export async function DELETE(
       .select("id");
     if (error) throw error;
     if (!data?.length)
-      throw new HttpError("Nicht gefunden oder noch in Verarbeitung.", 409);
+      throw new HttpError("Not found or still processing.", 409);
     return Response.json({ ok: true });
   } catch (e) {
     return errorResponse(e);

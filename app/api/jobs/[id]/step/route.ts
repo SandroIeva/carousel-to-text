@@ -16,7 +16,7 @@ export async function POST(
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;
-    if (!data) throw new HttpError("Nicht gefunden.", 404);
+    if (!data) throw new HttpError("Not found.", 404);
     await processJob(id);
     return Response.json({ ok: true });
   } catch (e) {

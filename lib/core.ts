@@ -1,12 +1,12 @@
 import type { Job, Slide } from "./types";
 export function normalizeUrl(input: unknown) {
   if (typeof input !== "string" || input.length > 2048)
-    throw new Error("Bitte einen gültigen Instagram-Link eingeben.");
+    throw new Error("Please enter a valid Instagram link.");
   let u: URL;
   try {
     u = new URL(input.trim());
   } catch {
-    throw new Error("Ungültiger Link.");
+    throw new Error("Invalid link.");
   }
   const match = u.pathname.match(/^\/(p|reel)\/([A-Za-z0-9_-]{1,100})\/?$/);
   if (
@@ -17,7 +17,7 @@ export function normalizeUrl(input: unknown) {
     u.port ||
     !match
   )
-    throw new Error("Bitte einen öffentlichen Instagram-Post-Link verwenden.");
+    throw new Error("Please use a public Instagram post link.");
   return `https://www.instagram.com/${match[1]}/${match[2]}/`;
 }
 export function validateImageUrl(value: string) {
@@ -31,7 +31,7 @@ export function validateImageUrl(value: string) {
       (h) => u.hostname === h || u.hostname.endsWith("." + h),
     )
   )
-    throw new Error("Unerwartete Bildquelle.");
+    throw new Error("Unexpected image source.");
   return u.toString();
 }
 type Row = Record<string, unknown>;
@@ -42,9 +42,11 @@ export function parseSlides(post: Row): Slide[] {
   else if (post.type === "Video") rows = [post];
   else if (Array.isArray(post.images) && post.images.length) rows = post.images;
   else if (post.displayUrl) rows = [post];
-  if (!rows.length) throw new Error("Keine Slides gefunden.");
+  if (!rows.length) throw new Error("No slides found.");
   if (rows.length > 25)
-    throw new Error("Mehr als 25 Slides werden derzeit nicht unterstützt.");
+    throw new Error(
+      "Carousels with more than 25 slides are not supported yet.",
+    );
   return rows.map((item, i) => {
     const r: Row =
       typeof item === "string"
@@ -66,9 +68,12 @@ export function parseSlides(post: Row): Slide[] {
           : "failed",
       text: "",
       ...(video
-        ? { error: "Video-Slide: Texterkennung nur für Bilder." }
+        ? {
+            error:
+              "Video slide: text recognition is available for images only.",
+          }
         : typeof source !== "string"
-          ? { error: "Bildquelle fehlt." }
+          ? { error: "Image source is missing." }
           : {}),
     };
   });
@@ -81,9 +86,7 @@ export function exportJob(
   format: string,
 ) {
   const slideText = (s: Slide) =>
-    s.status === "completed"
-      ? s.text
-      : `[${s.error || "Noch nicht verarbeitet"}]`;
+    s.status === "completed" ? s.text : `[${s.error || "Not processed yet"}]`;
   if (format === "json")
     return {
       body: JSON.stringify(
@@ -109,17 +112,17 @@ export function exportJob(
       extension: "json",
     };
   const md =
-    `# Instagram Carousel\n\nQuelle: ${job.url}\nCreator: @${job.owner || "unbekannt"}\nSlides: ${job.slides.length}\n` +
+    `# Instagram Carousel\n\nSource: ${job.url}\nCreator: @${job.owner || "unknown"}\nSlides: ${job.slides.length}\n` +
     job.slides
       .map((s) => `\n---\n\n## Slide ${s.position}\n\n${slideText(s)}\n`)
       .join("") +
-    `\n---\n\n## Original Caption\n\n${job.caption || "[Keine Caption vorhanden]"}\n`;
+    `\n---\n\n## Original Caption\n\n${job.caption || "[No caption available]"}\n`;
   if (format === "md")
     return { body: md, type: "text/markdown", extension: "md" };
   if (format === "txt")
     return {
       body:
-        `Instagram Carousel\nQuelle: ${job.url}\nCreator: @${job.owner || "unbekannt"}\n\n` +
+        `Instagram Carousel\nSource: ${job.url}\nCreator: @${job.owner || "unknown"}\n\n` +
         job.slides
           .map(
             (s) =>
@@ -132,5 +135,5 @@ export function exportJob(
       type: "text/plain",
       extension: "txt",
     };
-  throw new Error("Unbekanntes Exportformat.");
+  throw new Error("Unknown export format.");
 }

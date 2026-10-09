@@ -26,20 +26,17 @@ export async function POST(req: Request) {
     sameOrigin(req);
     const { user } = await identity();
     if (!integrationsReady())
-      throw new HttpError(
-        "Extraktion ist auf dem Server noch nicht eingerichtet.",
-        503,
-      );
+      throw new HttpError("Extraction is not set up on the server yet.", 503);
     const text = await req.text();
-    if (text.length > 4096) throw new HttpError("Anfrage zu groß.", 413);
+    if (text.length > 4096) throw new HttpError("Request is too large.", 413);
     let body;
     try {
       body = JSON.parse(text);
     } catch {
-      throw new HttpError("Ungültige Anfrage.");
+      throw new HttpError("Invalid request.");
     }
     if (!body || typeof body !== "object")
-      throw new HttpError("Ungültige Anfrage.");
+      throw new HttpError("Invalid request.");
     let url;
     try {
       url = normalizeUrl(body.url);
@@ -53,7 +50,7 @@ export async function POST(req: Request) {
         requestId,
       )
     )
-      throw new HttpError("Ungültige Anfrage-ID.");
+      throw new HttpError("Invalid request ID.");
     const { data, error } = await admin().rpc("ctt_reserve_job", {
       p_user: user.id,
       p_url: url,
@@ -61,11 +58,11 @@ export async function POST(req: Request) {
     });
     if (error) {
       if (error.message.includes("quota"))
-        throw new HttpError("Monatliches Nutzungslimit erreicht.", 429);
+        throw new HttpError("Monthly usage limit reached.", 429);
       if (error.message.includes("active"))
-        throw new HttpError("Es laufen bereits drei Extraktionen.", 429);
+        throw new HttpError("Three extractions are already running.", 429);
       if (error.message.includes("rate"))
-        throw new HttpError("Bitte zehn Sekunden warten.", 429);
+        throw new HttpError("Please wait ten seconds.", 429);
       throw error;
     }
     return Response.json({ id: data }, { status: 201 });

@@ -38,9 +38,7 @@ export default async function Page() {
       limit={plan?.monthly_limit ?? 30}
       ready={integrationsReady()}
       initialError={
-        error
-          ? "Verlauf konnte nicht geladen werden. Datenbank-Einrichtung prüfen."
-          : ""
+        error ? "Could not load your history. Please check database setup." : ""
       }
     />
   );

@@ -30,7 +30,7 @@ export async function advanceJob(
         patch = {
           status: "processing",
           slides: parseSlides(post),
-          owner: String(post.ownerUsername || "unbekannt"),
+          owner: String(post.ownerUsername || "unknown"),
           caption: String(post.caption || ""),
         };
       } else if (["FAILED", "ABORTED", "TIMED-OUT"].includes(run.status))
@@ -45,7 +45,7 @@ export async function advanceJob(
         } catch {
           slide.status = "failed";
           slide.error =
-            "Texterkennung fehlgeschlagen. Bild eventuell abgelaufen oder nicht lesbar.";
+            "Text recognition failed. The image may have expired or may be unreadable.";
         }
       }
       const pending = slides.some((s) => s.status === "pending");
@@ -59,15 +59,14 @@ export async function advanceJob(
             : good
               ? "partial"
               : "failed",
-        error:
-          !pending && !good ? "Kein Slide konnte transkribiert werden." : null,
+        error: !pending && !good ? "No slides could be transcribed." : null,
       };
     }
   } catch {
     patch = {
       status: "failed",
       error:
-        "Extraktion fehlgeschlagen. Bitte öffentlichen Link und Server-Konfiguration prüfen.",
+        "Extraction failed. Please check the public link and server configuration.",
     };
   }
   return patch;

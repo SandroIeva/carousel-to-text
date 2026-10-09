@@ -13,9 +13,9 @@ export default async function Login({
         ▤ SlideScript
       </Link>
       <section className="card">
-        <span className="eyebrow">WILLKOMMEN</span>
-        <h1>Dein Text-Workspace.</h1>
-        <p>Melde dich an oder erstelle dein Konto.</p>
+        <span className="eyebrow">WELCOME</span>
+        <h1>Sign in to SlideScript.</h1>
+        <p>Sign in or create an account.</p>
         {message && (
           <div className="notice" role="status">
             {message}
@@ -23,23 +23,22 @@ export default async function Login({
         )}
         {!configured() && (
           <div className="notice">
-            Supabase-Konfiguration fehlt. Der Login wird nach Einrichtung
-            verfügbar.
+            Sign in will be available once setup is complete.
           </div>
         )}
         <form action={authenticate}>
           <label>
-            E-Mail
+            Email
             <input
               name="email"
               type="email"
               autoComplete="email"
               required
-              placeholder="du@unternehmen.de"
+              placeholder="you@company.com"
             />
           </label>
           <label>
-            Passwort
+            Password
             <input
               name="password"
               type="password"
@@ -47,11 +46,11 @@ export default async function Login({
               minLength={8}
               maxLength={128}
               required
-              placeholder="Mindestens 8 Zeichen"
+              placeholder="At least 8 characters"
             />
           </label>
           <button name="mode" value="login" disabled={!configured()}>
-            Anmelden →
+            Sign in →
           </button>
           <button
             name="mode"
@@ -59,12 +58,11 @@ export default async function Login({
             className="secondary"
             disabled={!configured()}
           >
-            Konto erstellen
+            Create account
           </button>
         </form>
         <small>
-          Bei der Registrierung erhältst du gegebenenfalls einen
-          Bestätigungslink per E-Mail.
+          You may receive an email confirmation link when you sign up.
         </small>
       </section>
     </main>

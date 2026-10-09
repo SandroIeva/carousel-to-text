@@ -9,7 +9,7 @@ export function configured() {
   );
 }
 export async function sessionClient() {
-  if (!configured()) throw new Error("Supabase ist noch nicht konfiguriert.");
+  if (!configured()) throw new Error("Supabase is not configured yet.");
   const jar = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,7 +32,7 @@ export async function sessionClient() {
 }
 export function admin() {
   if (!process.env.SUPABASE_SECRET_KEY)
-    throw new Error("Server-Konfiguration fehlt.");
+    throw new Error("Server configuration is missing.");
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SECRET_KEY,
@@ -50,12 +50,12 @@ export class HttpError extends Error {
 export async function identity() {
   const db = await sessionClient();
   const { data, error } = await db.auth.getUser();
-  if (error || !data.user) throw new HttpError("Bitte anmelden.", 401);
+  if (error || !data.user) throw new HttpError("Please sign in.", 401);
   return { db, user: data.user };
 }
 export function sameOrigin(req: Request) {
   if (req.headers.get("origin") !== new URL(process.env.APP_URL!).origin)
-    throw new HttpError("Anfrage nicht erlaubt.", 403);
+    throw new HttpError("Request not allowed.", 403);
 }
 export function errorResponse(error: unknown) {
   return Response.json(
@@ -63,7 +63,7 @@ export function errorResponse(error: unknown) {
       error:
         error instanceof HttpError
           ? error.message
-          : "Die Anfrage konnte nicht verarbeitet werden.",
+          : "Could not process the request.",
     },
     {
       status: error instanceof HttpError ? error.status : 503,

@@ -4,12 +4,12 @@ import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { terminal, type Job } from "@/lib/types";
 const labels: Record<Job["status"], string> = {
-  queued: "Wartet",
-  scraping: "Slides laden",
-  processing: "Text erkennen",
-  completed: "Abgeschlossen",
-  partial: "Teilweise",
-  failed: "Fehlgeschlagen",
+  queued: "Queued",
+  scraping: "Loading slides",
+  processing: "Reading text",
+  completed: "Completed",
+  partial: "Partial",
+  failed: "Failed",
 };
 export default function Dashboard({
   initial,
@@ -53,7 +53,7 @@ export default function Dashboard({
     async function tick() {
       try {
         const r = await fetch("/api/jobs", { cache: "no-store" });
-        if (!r.ok) throw new Error("Verlauf konnte nicht aktualisiert werden.");
+        if (!r.ok) throw new Error("Could not refresh your history.");
         const all: Job[] = await r.json();
         if (stopped) return;
         setJobs(all);
@@ -99,7 +99,7 @@ export default function Dashboard({
       if (!r.ok) throw new Error(b.error);
       const history = await fetch("/api/jobs", { cache: "no-store" });
       if (!history.ok)
-        throw new Error("Extraktion angelegt; Verlauf bitte neu laden.");
+        throw new Error("Extraction created. Please reload your history.");
       const all: Job[] = await history.json();
       setJobs(all);
       setSelected(b.id);
@@ -113,12 +113,12 @@ export default function Dashboard({
     }
   }
   async function remove(id: string) {
-    if (!confirm("Extraktion und Texte dauerhaft löschen?")) return;
+    if (!confirm("Permanently delete this extraction and its text?")) return;
     const r = await fetch(`/api/jobs/${id}`, { method: "DELETE" });
     if (r.ok) {
       setJobs((j) => j.filter((x) => x.id !== id));
       if (selected === id) setSelected(null);
-    } else setError("Löschen nicht möglich. Bitte erneut versuchen.");
+    } else setError("Could not delete. Please try again.");
   }
   const job = jobs.find((j) => j.id === selected);
   async function copyText() {
@@ -132,7 +132,7 @@ export default function Dashboard({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("Kopieren nicht möglich. Bitte den Text direkt markieren.");
+      setError("Could not copy. Please select the text directly.");
     }
   }
   return (
@@ -143,22 +143,22 @@ export default function Dashboard({
         </Link>
         {guest ? (
           <Link href="/dashboard" className="text-button">
-            Anmelden
+            Sign in
           </Link>
         ) : (
           <form action={signOut}>
             <button className="text-button" title={email}>
-              Abmelden
+              Sign out
             </button>
           </form>
         )}
       </header>
       <section className="composer">
-        <h1>Carousel rein. Text raus.</h1>
-        <p>Instagram-Link einfügen. Den Text Slide für Slide erhalten.</p>
+        <h1>Carousel in. Text out.</h1>
+        <p>Paste an Instagram link. Get the text, slide by slide.</p>
         <form onSubmit={start}>
           <label htmlFor="instagram" className="sr-only">
-            Instagram-Link
+            Instagram link
           </label>
           <div className="input-row">
             <input
@@ -173,7 +173,7 @@ export default function Dashboard({
               placeholder="https://www.instagram.com/p/…"
             />
             <button disabled={busy || (!guest && (!ready || count >= limit))}>
-              {busy ? "Startet…" : "Extrahieren"}
+              {busy ? "Starting…" : "Extract"}
             </button>
           </div>
         </form>
@@ -183,23 +183,23 @@ export default function Dashboard({
           </p>
         )}
         {!guest && !ready && (
-          <p className="notice">Extraktion ist noch nicht eingerichtet.</p>
+          <p className="notice">Extraction is not set up yet.</p>
         )}
         {!guest && count >= limit && (
-          <p className="notice">Dein monatliches Limit ist erreicht.</p>
+          <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>
       {job && (
-        <section className="result" aria-label="Extrahierter Text">
+        <section className="result" aria-label="Extracted text">
           <div className="section-title">
-            <h2>Dein Text</h2>
+            <h2>Your text</h2>
             <a
               href={job.url}
               target="_blank"
               rel="noreferrer"
               className="subtle-link"
             >
-              Original ansehen ↗
+              View original ↗
             </a>
           </div>
           {!terminal(job.status) && (
@@ -215,13 +215,13 @@ export default function Dashboard({
               <small className="slide-label">
                 Slide {String(s.position).padStart(2, "0")}
               </small>
-              <pre>{s.text || s.error || "Wird verarbeitet…"}</pre>
+              <pre>{s.text || s.error || "Processing…"}</pre>
             </article>
           ))}
           {terminal(job.status) && (
             <div className="export-actions">
               <button className="secondary" onClick={copyText}>
-                {copied ? "Kopiert" : "Text kopieren"}
+                {copied ? "Copied" : "Copy text"}
               </button>
               {["md", "txt", "json"].map((f) => (
                 <a
@@ -236,13 +236,13 @@ export default function Dashboard({
                 className="text-button danger"
                 onClick={() => remove(job.id)}
               >
-                Löschen
+                Delete
               </button>
             </div>
           )}
           {job.caption && (
             <details className="caption">
-              <summary>Originalbeschreibung</summary>
+              <summary>Original caption</summary>
               <pre>{job.caption}</pre>
             </details>
           )}
@@ -250,7 +250,7 @@ export default function Dashboard({
       )}
       {!guest && jobs.length > 0 && (
         <details className="history">
-          <summary>Frühere Extraktionen ({jobs.length})</summary>
+          <summary>Previous extractions ({jobs.length})</summary>
           <div className="job-list">
             {jobs.map((j) => (
               <button

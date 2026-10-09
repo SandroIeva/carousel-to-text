@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   }
   return NextResponse.redirect(
     new URL(
-      "/login?message=Bestätigungslink+ungültig+oder+abgelaufen.",
+      "/login?message=Confirmation+link+is+invalid+or+expired.",
       process.env.APP_URL,
     ),
   );

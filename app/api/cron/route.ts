@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   if (!integrationsReady())
     return Response.json(
-      { error: "Server-Konfiguration fehlt." },
+      { error: "Server configuration is missing." },
       { status: 503 },
     );
   try {

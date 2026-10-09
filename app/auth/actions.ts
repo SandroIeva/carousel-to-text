@@ -4,8 +4,7 @@ import { sessionClient, configured } from "@/lib/server";
 export async function authenticate(form: FormData) {
   if (!configured())
     redirect(
-      "/login?message=" +
-        encodeURIComponent("Supabase ist noch nicht eingerichtet."),
+      "/login?message=" + encodeURIComponent("Supabase is not set up yet."),
     );
   const email = String(form.get("email") || "").trim();
   const password = String(form.get("password") || "");
@@ -18,7 +17,7 @@ export async function authenticate(form: FormData) {
   )
     redirect(
       "/login?message=" +
-        encodeURIComponent("E-Mail und Passwort prüfen (8–128 Zeichen)."),
+        encodeURIComponent("Check your email and password (8–128 characters)."),
     );
   const db = await sessionClient();
   if (mode === "signup") {
@@ -31,14 +30,14 @@ export async function authenticate(form: FormData) {
       redirect(
         "/login?message=" +
           encodeURIComponent(
-            "Registrierung nicht möglich. Bitte Angaben prüfen oder später erneut versuchen.",
+            "Could not create your account. Check your details or try again later.",
           ),
       );
     if (!data.session)
       redirect(
         "/login?message=" +
           encodeURIComponent(
-            "Bitte bestätige deine E-Mail über den zugeschickten Link.",
+            "Please confirm your email using the link we sent you.",
           ),
       );
   } else {
@@ -47,7 +46,7 @@ export async function authenticate(form: FormData) {
       redirect(
         "/login?message=" +
           encodeURIComponent(
-            "Anmeldung fehlgeschlagen. Zugangsdaten und E-Mail-Bestätigung prüfen.",
+            "Sign in failed. Check your credentials and email confirmation.",
           ),
       );
   }

@@ -2,11 +2,11 @@ import "./globals.css";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "SlideScript — Carousel to Text",
-  description: "Instagram-Carousels originalgetreu in Text umwandeln.",
+  description: "Turn Instagram carousels into faithful text, slide by slide.",
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

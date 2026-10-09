@@ -41,7 +41,7 @@ test("provider requests: secrets in headers, source matching, image bounds and i
       new Response("bad", { headers: { "content-type": "text/html" } });
     await assert.rejects(
       () => readImage("https://s.fbcdn.net/a"),
-      /Bildformat/,
+      /image format/,
     );
     globalThis.fetch = async () =>
       new Response(new Uint8Array(8000001), {
@@ -71,7 +71,7 @@ test("provider requests: secrets in headers, source matching, image bounds and i
     };
     await assert.rejects(
       () => transcribe("https://s.fbcdn.net/a"),
-      /unvollständig/,
+      /incomplete/,
     );
     globalThis.fetch = async (input) =>
       String(input).includes("fbcdn")

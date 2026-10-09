@@ -30,10 +30,10 @@ try {
   }
   assert.ok(ready, logs);
   const home = await fetch(base);
-  assert.match(await home.text(), /Carousel rein/);
+  assert.match(await home.text(), /Carousel in/);
   assert.equal(home.headers.get("x-content-type-options"), "nosniff");
   const login = await fetch(base + "/login");
-  assert.match(await login.text(), /Dein Text-Workspace/);
+  assert.match(await login.text(), /Sign in to SlideScript/);
   const dashboard = await fetch(base + "/dashboard", { redirect: "manual" });
   assert.equal(dashboard.status, 307);
   assert.match(dashboard.headers.get("location"), /login/);

@@ -10,16 +10,16 @@ export async function GET(
     const { id } = await params;
     const format = new URL(req.url).searchParams.get("format") || "md";
     if (!["md", "txt", "json"].includes(format))
-      throw new HttpError("Unbekanntes Exportformat.");
+      throw new HttpError("Unknown export format.");
     const { data, error } = await db
       .from("ctt_jobs")
       .select("*")
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;
-    if (!data) throw new HttpError("Nicht gefunden.", 404);
+    if (!data) throw new HttpError("Not found.", 404);
     if (!terminal(data.status))
-      throw new HttpError("Extraktion läuft noch.", 409);
+      throw new HttpError("Extraction is still running.", 409);
     const file = exportJob(data as Job, format);
     return new Response(file.body, {
       headers: {

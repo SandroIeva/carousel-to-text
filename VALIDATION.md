@@ -45,3 +45,7 @@ Umfangreiche RLS- und Live-Löschtests meldeten Invalid or expired requestState.
 ## Vereinfachte Oberfläche
 
 Seitennavigation, Statistik-Kacheln und Marketing-Landing entfernt. Startseite und angemeldete Ansicht nutzen dieselbe einfache Linkeingabe. Ergebnisse bleiben slideweise getrennt und erhalten Zeilenumbrüche; Kopieren und drei Exportformate bleiben verfügbar. Verlauf und Originalbeschreibung sind eingeklappt. Nicht angemeldete Nutzer werden vor der Extraktion zur Anmeldung geführt; der eingegebene Link bleibt tabbezogen erhalten. Exakte Schriftgrößen und Bildpositionen werden nicht rekonstruiert. Produktionsbuild (Webpack), TypeScript und HTTP-Smoke bestanden. Browser-E2E weiterhin nicht ausgeführt.
+
+## English interface
+
+All interface text, authentication messages, API errors, status labels, metadata and export labels use English. The document language is `en`. OCR preserves the source language; unreadable/empty placeholders use English. TypeScript, all 13 tests, production build and HTTP smoke passed after the language change.
