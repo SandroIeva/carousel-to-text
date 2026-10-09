@@ -34,7 +34,7 @@ try {
   assert.equal(home.headers.get("x-content-type-options"), "nosniff");
   const login = await fetch(base + "/login");
   const loginHtml = await login.text();
-  assert.match(loginHtml, /Sign in to SlideScript/);
+  assert.match(loginHtml, /Sign in to Slide Scrape/);
   assert.match(loginHtml, /Continue with Google/);
   const cancelledOAuth = await fetch(base + "/auth/callback?error=access_denied&error_description=untrusted", { redirect: "manual" });
   assert.equal(cancelledOAuth.status, 307);

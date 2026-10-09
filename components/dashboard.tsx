@@ -139,7 +139,7 @@ export default function Dashboard({
     <main className="simple-app">
       <header className="topbar">
         <Link href="/" className="brand">
-          SlideScript
+          Slide Scrape
         </Link>
         {guest ? (
           <Link href="/dashboard" className="text-button">

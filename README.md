@@ -1,4 +1,4 @@
-# SlideScript — Carousel to Text SaaS
+# Slide Scrape — Carousel to Text SaaS
 
 Weiterentwicklung des unveränderten Flask-MVPs im Ordner `original-mvp/` nach Next.js. Projekt: `jpgkkblchzzckoghrsku`. Das gelieferte ZIP wurde vor dem Entpacken gegen SHA-256 `bc948780611146eb449dbc488095446f6666c35d1b97aea930019345192580a5` verifiziert (7.423 Bytes); ZIP-CRC und Pfade wurden geprüft.
 

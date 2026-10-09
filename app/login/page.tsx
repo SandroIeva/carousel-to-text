@@ -10,11 +10,11 @@ export default async function Login({
   return (
     <main className="auth">
       <Link href="/" className="brand">
-        ▤ SlideScript
+        ▤ Slide Scrape
       </Link>
       <section className="card">
         <span className="eyebrow">WELCOME</span>
-        <h1>Sign in to SlideScript.</h1>
+        <h1>Sign in to Slide Scrape.</h1>
         <p>Sign in or create an account.</p>
         {message && (
           <div className="notice" role="status">
