@@ -10,7 +10,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <body>
         <div className="site-content">{children}</div>
-        <footer className="site-footer">Powered by i7OS</footer>
+        <footer className="site-footer">
+          This is powered by <a href="https://i7os.com">i7OS</a>
+        </footer>
       </body>
     </html>
   );
