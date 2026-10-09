@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { configured, identity, integrationsReady } from "@/lib/server";
 import Dashboard from "@/components/dashboard";
+import { usageDay } from "@/lib/daily-limit";
 export const dynamic = "force-dynamic";
 export default async function Page() {
   if (!configured()) redirect("/login");
@@ -11,25 +12,35 @@ export default async function Page() {
     redirect("/login");
   }
   const { db, user } = account;
-  const [{ data: jobs, error }, { data: plan }, { data: usage }] =
-    await Promise.all([
-      db
-        .from("ctt_jobs")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(100),
-      db
-        .from("ctt_plans")
-        .select("monthly_limit")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      db
-        .from("ctt_usage")
-        .select("used")
-        .eq("user_id", user.id)
-        .eq("month", new Date().toISOString().slice(0, 7) + "-01")
-        .maybeSingle(),
-    ]);
+  const [
+    { data: jobs, error },
+    { data: plan },
+    { data: usage },
+    { data: daily },
+  ] = await Promise.all([
+    db
+      .from("ctt_jobs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100),
+    db
+      .from("ctt_plans")
+      .select("monthly_limit")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    db
+      .from("ctt_daily_usage")
+      .select("used")
+      .eq("user_id", user.id)
+      .eq("day", usageDay())
+      .maybeSingle(),
+    db
+      .from("ctt_usage")
+      .select("used")
+      .eq("user_id", user.id)
+      .eq("month", new Date().toISOString().slice(0, 7) + "-01")
+      .maybeSingle(),
+  ]);
   return (
     <Dashboard
       initial={jobs || []}
@@ -41,6 +52,7 @@ export default async function Page() {
           : ""
       }
       used={usage?.used || 0}
+      dailyUsed={daily?.used || 0}
       limit={plan?.monthly_limit ?? 30}
       ready={integrationsReady()}
       initialError={

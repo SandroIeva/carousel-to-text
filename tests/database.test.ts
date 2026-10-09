@@ -13,11 +13,15 @@ test("database: RLS, permissions, quota, idempotency, leases and deletion", asyn
   await db.exec(readFileSync("schema.sql", "utf8"));
   await db.exec("set role service_role");
   const reserve = async (user: string, request = R) =>
-    db.query<{ id: string }>("select public.ctt_reserve_job($1,$2,$3) as id", [
-      user,
-      "https://www.instagram.com/p/a/",
-      request,
-    ]);
+    db.query<{ id: string }>(
+      "select public.ctt_reserve_job($1,$2,$3,$4) as id",
+      [
+        user,
+        "https://www.instagram.com/p/a/",
+        request,
+        user === A ? "a".repeat(64) : "b".repeat(64),
+      ],
+    );
   const first = await reserve(A);
   const id = first.rows[0].id;
   assert.equal((await reserve(A)).rows[0].id, id);

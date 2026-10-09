@@ -7,6 +7,7 @@ import {
   integrationsReady,
 } from "@/lib/server";
 import { normalizeUrl } from "@/lib/core";
+import { requestIpHash } from "@/lib/ip-limit";
 export async function GET() {
   try {
     const { db } = await identity();
@@ -51,12 +52,32 @@ export async function POST(req: Request) {
       )
     )
       throw new HttpError("Invalid request ID.");
+    let ipHash;
+    try {
+      ipHash = requestIpHash(req);
+    } catch {
+      throw new HttpError(
+        "Could not verify your network. Please try again later.",
+        503,
+      );
+    }
     const { data, error } = await admin().rpc("ctt_reserve_job", {
       p_user: user.id,
       p_url: url,
       p_request: requestId,
+      p_ip_hash: ipHash,
     });
     if (error) {
+      if (error.message.includes("daily_user_quota"))
+        throw new HttpError(
+          "Your daily limit of 3 extractions has been reached. Try again after midnight (Europe/Berlin).",
+          429,
+        );
+      if (error.message.includes("daily_ip_quota"))
+        throw new HttpError(
+          "This network has reached its daily limit of 3 extractions across all accounts. Try again after midnight (Europe/Berlin).",
+          429,
+        );
       if (error.message.includes("quota"))
         throw new HttpError("Monthly usage limit reached.", 429);
       if (error.message.includes("active"))

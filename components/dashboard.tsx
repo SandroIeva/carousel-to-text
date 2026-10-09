@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { terminal, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
+import { DAILY_LIMIT } from "@/lib/daily-limit";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
   scraping: "Loading slides",
@@ -21,6 +22,7 @@ export default function Dashboard({
   initialError,
   guest = false,
   avatarUrl = "",
+  dailyUsed = 0,
 }: {
   initial: Job[];
   email: string;
@@ -30,13 +32,15 @@ export default function Dashboard({
   initialError: string;
   guest?: boolean;
   avatarUrl?: string;
+  dailyUsed?: number;
 }) {
   const [jobs, setJobs] = useState<Job[]>(initial),
     [url, setUrl] = useState(""),
     [error, setError] = useState(initialError),
     [busy, setBusy] = useState(false),
     [newJobId, setNewJobId] = useState<string | null>(null),
-    [count, setCount] = useState(used);
+    [count, setCount] = useState(used),
+    [dailyCount, setDailyCount] = useState(dailyUsed);
   const requestId = useRef<string | null>(null);
   useEffect(() => {
     if (!guest) {
@@ -106,6 +110,7 @@ export default function Dashboard({
       setJobs(all);
       setNewJobId(b.id);
       setCount((c) => c + 1);
+      setDailyCount((c) => c + 1);
       setUrl("");
       requestId.current = null;
     } catch (e) {
@@ -159,7 +164,7 @@ export default function Dashboard({
               className="extract-button"
               aria-label={busy ? "Starting extraction" : "Extract content"}
               title={busy ? "Starting…" : "Extract content"}
-              disabled={busy || (!guest && (!ready || count >= limit))}
+              disabled={busy || (!guest && (!ready || count >= limit || dailyCount >= DAILY_LIMIT))}
             >
               {busy ? (
                 <span className="extract-spinner" aria-hidden="true" />
@@ -191,7 +196,10 @@ export default function Dashboard({
         {!guest && !ready && (
           <p className="notice">Extraction is not set up yet.</p>
         )}
-        {!guest && count >= limit && (
+        {!guest && dailyCount >= DAILY_LIMIT && (
+          <p className="notice">Your daily limit of 3 extractions has been reached. Try again after midnight (Europe/Berlin).</p>
+        )}
+        {!guest && dailyCount < DAILY_LIMIT && count >= limit && (
           <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>
