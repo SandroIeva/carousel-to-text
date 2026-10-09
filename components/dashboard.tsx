@@ -189,7 +189,7 @@ export default function Dashboard({
               }
             >
               {busy ? (
-                <span className="extract-spinner" aria-hidden="true" />
+                <span className="loader loader-button" aria-hidden="true" />
               ) : (
                 <svg
                   width="25"
@@ -463,11 +463,14 @@ function SavedExtraction({
           View original ↗
         </a>
         {!terminal(job.status) && (
-          <p role="status">
+          <div className="extraction-loading" role="status">
+            <span className="loader" aria-hidden="true" />
+            <span>
             {job.status === "processing"
               ? `Reading slide ${Math.min(job.slides.filter((s) => s.status !== "pending").length + 1, job.slides.length)} of ${job.slides.length}…`
               : `Loading ${platformLabel(job.url)} post…`}
-          </p>
+            </span>
+          </div>
         )}
         {job.error && <p className="notice">{job.error}</p>}
         {job.slides.map((s) => (
