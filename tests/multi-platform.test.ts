@@ -9,6 +9,13 @@ const linkedin =
 const threads = "https://www.threads.com/@zuck/post/AbC123";
 const cdn = "https://media.licdn.com/";
 
+test("accepts the reported LinkedIn ugcPost Copy link and removes tracking", () => {
+  const canonical = "https://www.linkedin.com/posts/benrmatthews_the-big-linkedin-carousel-shift-ugcPost-7477337554003001346-ME3M";
+  assert.equal(normalizeUrl(canonical + "/?utm_source=share&utm_medium=member_desktop&rcm=tracking"), canonical);
+  assert.equal(normalizeUrl(canonical.replace("www.", "de.")), canonical);
+  assert.throws(() => normalizeUrl(canonical.replace("ugcPost", "anything")));
+});
+
 test("platform normalization rejects aliases, credentials, ports and deceptive domains", () => {
   assert.equal(normalizeUrl(linkedin + "?tracking=1"), linkedin);
   assert.equal(normalizeUrl(linkedin.replace("www.", "de.")), linkedin);

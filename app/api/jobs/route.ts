@@ -8,6 +8,7 @@ import {
 } from "@/lib/server";
 import { normalizeUrl } from "@/lib/core";
 import { requestIpHash } from "@/lib/ip-limit";
+import { resolveLinkedInUrl } from "@/lib/linkedin-url";
 export async function GET() {
   try {
     const { db } = await identity();
@@ -52,6 +53,11 @@ export async function POST(req: Request) {
       )
     )
       throw new HttpError("Invalid request ID.");
+    try {
+      url = await resolveLinkedInUrl(url);
+    } catch (e) {
+      throw new HttpError((e as Error).message);
+    }
     let ipHash;
     try {
       ipHash = requestIpHash(req);

@@ -24,11 +24,11 @@ export function normalizeUrl(input: unknown) {
   if (/^(?:www\.|[a-z]{2}\.)?linkedin\.com$/.test(u.hostname)) {
     // Curly requires the public, author-bearing /posts/ URL, not feed aliases.
     const match = u.pathname.match(
-      /^\/posts\/([A-Za-z0-9_-]+-activity-\d{10,25}-[A-Za-z0-9_-]+)\/?$/,
+      /^\/posts\/([A-Za-z0-9_-]+-(?:activity|ugcPost)-\d{10,25}-[A-Za-z0-9_-]+)\/?$/,
     );
     if (match) return `https://www.linkedin.com/posts/${match[1]}`;
     throw new Error(
-      "Use the LinkedIn /posts/ link copied from the public post, not a /feed/update/ link.",
+      "Please use the full LinkedIn post link copied with Copy link.",
     );
   }
   if (

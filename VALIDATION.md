@@ -98,3 +98,10 @@ Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters
 - Live migration applied. Requested existing confirmed owner account enabled separately. Live bypass/idempotency/network-counter test passed inside a rolled-back transaction without provider calls. Client write and RPC permissions verified denied.
 - Typecheck, all 26 tests and production build passed. Security advisor reports no database findings; existing leaked-password protection warning remains.
 
+# LinkedIn Copy link fix — 2026-10-09
+
+- Accepts author-bearing `/posts/...-ugcPost-ID-suffix` share links in addition to activity links. Tracking parameters removed.
+- Resolves ugcPost links server-side using LinkedIn's public canonical URL before reservation and scraper launch. Activity and ugcPost IDs are different and are never substituted heuristically.
+- HTTPS LinkedIn-only fetch, redirects disabled, 15s timeout, 1MB HTML limit, canonical host and matching author/post slug validated.
+- Actual reported Ben Matthews URL resolved successfully with the application resolver to activity ID 7477337555148046336. Typecheck and 28 tests passed. No authenticated Apify/Gemini end-to-end run was performed in this workspace.
+
