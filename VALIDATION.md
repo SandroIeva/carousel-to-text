@@ -65,3 +65,7 @@ The old check accepted only APP_URL; mismatched deployment addresses caused HTTP
 ## Origin diagnostics
 
 Repeated production rejection remains unresolved. Error responses now show only parsed public browser/configured origins or missing/invalid configuration indicators. No credentials, query strings or raw environment values are reflected. The 16 tests, including diagnostic assertions, and production build passed. Need the resulting production message to identify the live mismatch.
+
+## Per-slide provider diagnostics
+
+Screenshot showed all OCR steps failing, not an unreadable layout. Added safe provider-specific HTTP/network diagnostics for Gemini, Apify and image downloads. Only controlled messages are persisted; raw response bodies, secrets and unknown exceptions remain hidden. 17 tests and production build passed. Need a new extraction on the updated deployment to determine actual provider failure; no billing requirement has been established.

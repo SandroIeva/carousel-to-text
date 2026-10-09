@@ -1,6 +1,7 @@
 import "server-only";
 import { parseSlides } from "./core";
 import { apifyPost, apifyRun, startApify, transcribe } from "./providers";
+import { ProviderFailure } from "./provider-error";
 import type { Job } from "./types";
 export async function advanceJob(
   job: Job,
@@ -42,10 +43,12 @@ export async function advanceJob(
         try {
           slide.text = await providers.transcribe(slide.imageUrl!);
           slide.status = "completed";
-        } catch {
+        } catch (error) {
           slide.status = "failed";
           slide.error =
-            "Text recognition failed. The image may have expired or may be unreadable.";
+            error instanceof ProviderFailure
+              ? error.message
+              : "Text recognition failed. Please try a new extraction.";
         }
       }
       const pending = slides.some((s) => s.status === "pending");
