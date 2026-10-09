@@ -305,16 +305,18 @@ small {
 .processing-shimmer {
   display: inline-block;
   color: var(--muted);
-  background: linear-gradient(100deg, #777 20%, #aaa 38%, #e5e5e5 50%, #aaa 62%, #777 80%);
-  background-size: 300% 100%;
-  background-position: 100% 0;
+  background-color: #777;
+  background-image: linear-gradient(to right, #777, #fff 50%, #777);
+  background-size: 60px 100%;
+  background-repeat: no-repeat;
+  background-position: -60px 0;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: processing-shimmer 3.5s ease-in-out infinite;
 }
 @keyframes processing-shimmer {
-  to { background-position: -100% 0; }
+  to { background-position: calc(100% + 60px) 0; }
 }
 .slide-processing {
   display: flex;
