@@ -30,16 +30,22 @@ try {
   }
   assert.ok(ready, logs);
   const home = await fetch(base);
-  assert.match(await home.text(), /Carousel in/);
+  assert.match(await home.text(), /Link in/);
   assert.equal(home.headers.get("x-content-type-options"), "nosniff");
   const login = await fetch(base + "/login");
   const loginHtml = await login.text();
   assert.match(loginHtml, /Sign in to Slide Scrape/);
   assert.match(loginHtml, /Continue with Google/);
-  const cancelledOAuth = await fetch(base + "/auth/callback?error=access_denied&error_description=untrusted", { redirect: "manual" });
+  const cancelledOAuth = await fetch(
+    base + "/auth/callback?error=access_denied&error_description=untrusted",
+    { redirect: "manual" },
+  );
   assert.equal(cancelledOAuth.status, 307);
   assert.equal(new URL(cancelledOAuth.headers.get("location")).origin, base);
-  assert.equal(new URL(cancelledOAuth.headers.get("location")).pathname, "/login");
+  assert.equal(
+    new URL(cancelledOAuth.headers.get("location")).pathname,
+    "/login",
+  );
   assert.ok(!cancelledOAuth.headers.get("location").includes("untrusted"));
   const dashboard = await fetch(base + "/dashboard", { redirect: "manual" });
   assert.equal(dashboard.status, 307);

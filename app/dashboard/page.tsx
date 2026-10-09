@@ -34,6 +34,12 @@ export default async function Page() {
     <Dashboard
       initial={jobs || []}
       email={user.email || ""}
+      avatarUrl={
+        typeof user.user_metadata?.avatar_url === "string" &&
+        user.user_metadata.avatar_url.startsWith("https://")
+          ? user.user_metadata.avatar_url
+          : ""
+      }
       used={usage?.used || 0}
       limit={plan?.monthly_limit ?? 30}
       ready={integrationsReady()}

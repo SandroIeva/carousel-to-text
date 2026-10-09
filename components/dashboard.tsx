@@ -19,6 +19,7 @@ export default function Dashboard({
   ready,
   initialError,
   guest = false,
+  avatarUrl = "",
 }: {
   initial: Job[];
   email: string;
@@ -27,6 +28,7 @@ export default function Dashboard({
   ready: boolean;
   initialError: string;
   guest?: boolean;
+  avatarUrl?: string;
 }) {
   const [jobs, setJobs] = useState<Job[]>(initial),
     [url, setUrl] = useState(""),
@@ -130,15 +132,11 @@ export default function Dashboard({
             Sign in
           </Link>
         ) : (
-          <form action={signOut}>
-            <button className="text-button" title={email}>
-              Sign out
-            </button>
-          </form>
+          <AccountDropdown email={email} avatarUrl={avatarUrl} />
         )}
       </header>
       <section className="composer">
-        <h1>Carousel in. Text out.</h1>
+        <h1>Link in. Content out.</h1>
         <p>Paste an Instagram link. Get the text, slide by slide.</p>
         <form onSubmit={start}>
           <label htmlFor="instagram" className="sr-only">
@@ -210,6 +208,82 @@ export default function Dashboard({
         </section>
       )}
     </main>
+  );
+}
+
+function AccountDropdown({
+  email,
+  avatarUrl,
+}: {
+  email: string;
+  avatarUrl: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [failedImage, setFailedImage] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    function closeOutside(event: PointerEvent) {
+      if (!container.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function escape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        trigger.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+  return (
+    <div
+      className="account"
+      ref={container}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node))
+          setOpen(false);
+      }}
+    >
+      <button
+        className="account-avatar"
+        ref={trigger}
+        type="button"
+        aria-label="Account options"
+        aria-expanded={open}
+        aria-controls="account-dropdown"
+        onClick={() => setOpen(!open)}
+      >
+        {avatarUrl && !failedImage ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            width="40"
+            height="40"
+            referrerPolicy="no-referrer"
+            onError={() => setFailedImage(true)}
+          />
+        ) : (
+          <span aria-hidden="true">
+            {email.trim().charAt(0).toUpperCase() || "U"}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="account-dropdown" id="account-dropdown">
+          <p className="account-email" title={email}>
+            {email}
+          </p>
+          <form action={signOut}>
+            <button className="account-signout">Sign out</button>
+          </form>
+        </div>
+      )}
+    </div>
   );
 }
 

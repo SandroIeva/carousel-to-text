@@ -119,6 +119,60 @@ small {
   font-size: 13px;
   font-weight: 400;
 }
+.account {
+  position: relative;
+}
+.account-avatar {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eaf1ff;
+  color: #2563eb;
+  font-weight: 600;
+  overflow: hidden;
+}
+.account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 10;
+  width: 240px;
+  max-width: calc(100vw - 40px);
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgb(20 35 65 / 10%);
+}
+.account-email {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-signout {
+  justify-content: flex-start;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+}
+.account-signout:hover {
+  background: #f4f5f8;
+  opacity: 1;
+}
 .composer {
   padding: 84px 0 40px;
 }
