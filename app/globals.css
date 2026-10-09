@@ -588,6 +588,7 @@ summary {
   transform: rotate(180deg);
 }
 .extraction-content {
+  overflow: hidden;
   padding: 0 0 24px;
 }
 .extraction-content > .subtle-link {

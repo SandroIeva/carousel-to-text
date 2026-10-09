@@ -382,6 +382,40 @@ function SavedExtraction({
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [open, setOpen] = useState(initiallyOpen);
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<Animation | null>(null);
+  const desiredOpen = useRef(initiallyOpen);
+  useEffect(() => () => { animationRef.current?.cancel(); }, []);
+  function toggleSection(event: React.MouseEvent<HTMLElement>) {
+    event.preventDefault();
+    const details = detailsRef.current;
+    const content = contentRef.current;
+    if (!details || !content) return;
+    const next = !desiredOpen.current;
+    desiredOpen.current = next;
+    const from = details.open ? content.getBoundingClientRect().height : 0;
+    const opacity = details.open ? getComputedStyle(content).opacity : "0";
+    const paddingBottom = details.open ? getComputedStyle(content).paddingBottom : "0px";
+    animationRef.current?.cancel();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setOpen(next);
+      return;
+    }
+    details.open = true;
+    setOpen(true);
+    const animation = content.animate(
+      [{ height: `${from}px`, opacity, paddingBottom }, { height: next ? `${content.scrollHeight}px` : "0px", opacity: next ? 1 : 0, paddingBottom: next ? "24px" : "0px" }],
+      { duration: 400, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
+    animationRef.current = animation;
+    animation.onfinish = () => {
+      if (animationRef.current !== animation) return;
+      details.open = next;
+      setOpen(next);
+      animationRef.current = null;
+    };
+  }
   async function copy(text: string, label: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -393,11 +427,11 @@ function SavedExtraction({
   }
   return (
     <details
+      ref={detailsRef}
       className="saved-extraction"
       open={open}
-      onToggle={(e) => setOpen(e.currentTarget.open)}
     >
-      <summary className="extraction-summary">
+      <summary className="extraction-summary" onClick={toggleSection}>
         <span className="extraction-title">
           {titleWithEmojiSpacing(extractionTitle(job))}
           <small>
@@ -458,7 +492,7 @@ function SavedExtraction({
           </svg>
         </span>
       </summary>
-      <div className="extraction-content">
+      <div className="extraction-content" ref={contentRef}>
         <a
           href={job.url}
           target="_blank"
