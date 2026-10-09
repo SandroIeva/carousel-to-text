@@ -283,7 +283,19 @@ small {
   }
 }
 .composer .notice {
-  margin: 16px 0 0;
+  margin: 28px 0 0;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  text-align: center;
+}
+.extraction-progress {
+  margin: 30px 0 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .notice {
   padding: 12px 16px;

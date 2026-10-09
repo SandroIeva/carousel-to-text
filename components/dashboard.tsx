@@ -5,6 +5,7 @@ import { signOut } from "@/app/auth/actions";
 import { terminal, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
+import { hasSavedContent } from "@/lib/history";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
   scraping: "Loading slides",
@@ -23,6 +24,7 @@ export default function Dashboard({
   guest = false,
   avatarUrl = "",
   dailyUsed = 0,
+  quotaExempt = false,
 }: {
   initial: Job[];
   email: string;
@@ -33,6 +35,7 @@ export default function Dashboard({
   guest?: boolean;
   avatarUrl?: string;
   dailyUsed?: number;
+  quotaExempt?: boolean;
 }) {
   const [jobs, setJobs] = useState<Job[]>(initial),
     [url, setUrl] = useState(""),
@@ -42,6 +45,8 @@ export default function Dashboard({
     [count, setCount] = useState(used),
     [dailyCount, setDailyCount] = useState(dailyUsed);
   const requestId = useRef<string | null>(null);
+  const reported = useRef(new Set(initial.filter((job) => terminal(job.status)).map((job) => job.id)));
+  const savedJobs = jobs.filter(hasSavedContent);
   useEffect(() => {
     if (!guest) {
       const saved = sessionStorage.getItem("carousel-url");
@@ -63,6 +68,14 @@ export default function Dashboard({
         const all: Job[] = await r.json();
         if (stopped) return;
         setJobs(all);
+        for (const result of all) {
+          if (terminal(result.status) && !reported.current.has(result.id)) {
+            reported.current.add(result.id);
+            if (!hasSavedContent(result)) {
+              setError(result.error || "No readable content was found. Please try another post.");
+            }
+          }
+        }
         const job = all.find((j) => !terminal(j.status));
         if (job) {
           const step = await fetch(`/api/jobs/${job.id}/step`, {
@@ -172,7 +185,7 @@ export default function Dashboard({
               disabled={
                 busy ||
                 (!guest &&
-                  (!ready || count >= limit || dailyCount >= DAILY_LIMIT))
+                  (!ready || (!quotaExempt && (count >= limit || dailyCount >= DAILY_LIMIT))))
               }
             >
               {busy ? (
@@ -205,19 +218,24 @@ export default function Dashboard({
         {!guest && !ready && (
           <p className="notice">Extraction is not set up yet.</p>
         )}
-        {!guest && dailyCount >= DAILY_LIMIT && (
+        {!guest && !quotaExempt && !error && dailyCount >= DAILY_LIMIT && (
           <p className="notice">
             Your daily limit of 3 extractions has been reached. Try again after
             midnight (Europe/Berlin).
           </p>
         )}
-        {!guest && dailyCount < DAILY_LIMIT && count >= limit && (
+        {!guest && !quotaExempt && !error && dailyCount < DAILY_LIMIT && count >= limit && (
           <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>
-      {!guest && jobs.length > 0 && (
+      {!guest && active && (
+        <p className="extraction-progress" role="status">
+          Extracting content… Your result will appear here when it’s ready.
+        </p>
+      )}
+      {!guest && savedJobs.length > 0 && (
         <section className="extraction-list" aria-label="Saved extractions">
-          {jobs.map((job) => (
+          {savedJobs.map((job) => (
             <SavedExtraction
               key={job.id}
               job={job}

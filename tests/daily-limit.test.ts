@@ -35,6 +35,8 @@ test("daily quota: three reservations, cross-account IP block, deletion/idempote
     }
     await assert.rejects(() => reserve(A, other), /daily_user_quota/);
     await assert.rejects(() => reserve(B, ip), /daily_ip_quota/);
+    assert.equal((await db.query("select id from ctt_jobs")).rows.length, 3,
+      "rejected requests do not create empty history rows");
     assert.equal(
       (
         await db.query<{ used: number }>(
@@ -72,6 +74,10 @@ test("daily quota: three reservations, cross-account IP block, deletion/idempote
       () => db.query("update ctt_daily_usage set used=0"),
       /permission denied/,
     );
+    await assert.rejects(
+      () => db.query("update ctt_plans set quota_exempt=true"),
+      /permission denied/,
+    );
     await db.exec("set role service_role");
     // Old-day buckets do not count towards today; no reset by deleting extraction results.
     await db.exec(
@@ -87,6 +93,15 @@ test("daily quota: three reservations, cross-account IP block, deletion/idempote
       ).rows[0].used,
       1,
     );
+    await db.query("update ctt_plans set quota_exempt=true,monthly_limit=0 where user_id=$1", [B]);
+    await db.query("update ctt_daily_usage set used=3 where user_id=$1", [B]);
+    await db.query("update ctt_ip_usage set used=3 where ip_hash=$1", [ip]);
+    const ownerRequest = crypto.randomUUID();
+    const exemptJob = (await reserve(B, ip, ownerRequest)).rows[0].id;
+    assert.equal((await reserve(B, ip, ownerRequest)).rows[0].id, exemptJob);
+    for (let i = 0; i < 4; i++) await reserve(B, ip);
+    assert.equal((await db.query<{used:number}>("select used from ctt_ip_usage where ip_hash=$1 and day=(now() at time zone 'Europe/Berlin')::date", [ip])).rows[0].used, 3,
+      "exempt account does not consume shared network quota");
   } finally {
     await db.close();
   }

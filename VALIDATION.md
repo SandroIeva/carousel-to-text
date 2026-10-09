@@ -89,3 +89,12 @@ Verified after implementation: 22 unit/integration tests passed, TypeScript pass
 ## Daily limits (2026-10-09)
 
 Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters, fixed cap 3 each, Berlin calendar day, atomic transaction locks, legacy RPC revoked. Additive migration retains existing jobs and monthly counts. 25 local tests, TypeScript, production build and HTTP smoke passed, including duplicate request IDs, 4th extraction denied, other account on same IP denied, deletion not resetting usage, next-day reset, canonical IPv6 and fail-closed IP handling. Security advisor has no new database findings; pre-existing leaked-password protection warning remains. Live privilege/RLS checks passed. The initially interrupted rollback scenario was retried successfully: the live database rejects a fourth account extraction and another account on the exhausted IP, preserves idempotency, and does not reset usage after result deletion. The entire test transaction was rolled back; no test accounts, jobs or usage counters remain.
+# History and quota exemption update — 2026-10-09
+
+- Finished extractions appear in history only when they contain readable extracted text; pending work uses a separate progress message. Empty failures remain internal diagnostic records, not visible history cards.
+- Limit rejection tests verify that no job is created. Composer notices are borderless and spaced 28px below the input.
+- Fixed reversed daily/monthly counter assignments on the dashboard.
+- Added service-managed `ctt_plans.quota_exempt`, protected by existing owner-only SELECT RLS and no authenticated write grants. Exempt reservations skip usage limits and do not consume shared IP buckets. No account email is embedded in application code.
+- Live migration applied. Requested existing confirmed owner account enabled separately. Live bypass/idempotency/network-counter test passed inside a rolled-back transaction without provider calls. Client write and RPC permissions verified denied.
+- Typecheck, all 26 tests and production build passed. Security advisor reports no database findings; existing leaked-password protection warning remains.
+

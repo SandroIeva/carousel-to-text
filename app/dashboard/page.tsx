@@ -15,8 +15,8 @@ export default async function Page() {
   const [
     { data: jobs, error },
     { data: plan },
-    { data: usage },
     { data: daily },
+    { data: usage },
   ] = await Promise.all([
     db
       .from("ctt_jobs")
@@ -25,7 +25,7 @@ export default async function Page() {
       .limit(100),
     db
       .from("ctt_plans")
-      .select("monthly_limit")
+      .select("monthly_limit,quota_exempt")
       .eq("user_id", user.id)
       .maybeSingle(),
     db
@@ -54,6 +54,7 @@ export default async function Page() {
       used={usage?.used || 0}
       dailyUsed={daily?.used || 0}
       limit={plan?.monthly_limit ?? 30}
+      quotaExempt={plan?.quota_exempt === true}
       ready={integrationsReady()}
       initialError={
         error ? "Could not load your history. Please check database setup." : ""
