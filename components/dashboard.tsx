@@ -444,9 +444,9 @@ function SavedExtraction({
           </small>
         </span>
         <small className="extraction-status">
-          {job.status === "completed" && (
+          {(job.status === "completed" || job.status === "partial") && (
             <svg
-              className="completed-icon"
+              className={`completed-icon${job.status === "partial" ? " partial-icon" : ""}`}
               width="24"
               height="24"
               viewBox="0 0 24 24"
@@ -469,8 +469,8 @@ function SavedExtraction({
               />
             </svg>
           )}
-          {job.status === "completed" ? (
-            <span className="sr-only">Completed</span>
+          {job.status === "completed" || job.status === "partial" ? (
+            <span className="sr-only">{labels[job.status]}</span>
           ) : job.status === "processing" ? (
             <>
               <span className="sr-only">Reading text</span>
