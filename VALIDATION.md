@@ -41,3 +41,7 @@ Die erfolgreiche lokale Prüfung ersetzt keine Live-Abnahme. Die benötigten Sch
 Live-SQL-Tests bestanden: Eigentümer sieht eigenen Job, anderer JWT-Nutzer sieht ihn nicht; anonyme Tabellen-/RPC-Zugriffe gesperrt; Client-RPCs, Limit- und Job-Updates gesperrt; Reservierung, Nutzung, Idempotenz, Rate-Limit, Quota, exklusive Lease und Wiederaufnahme abgelaufener Lease. Temporäre Testdaten zurückgerollt; finale Zählung: 0 Auth-Nutzer, 0 Jobs, 0 Pläne, 0 Verbrauchszeilen.
 
 Umfangreiche RLS- und Live-Löschtests meldeten Invalid or expired requestState. Diese Tests werden nicht als bestanden gewertet. Sicherheitsprüfung des Schemas und die kleineren Live-Tests bestanden. Der Performance-Advisor meldete lediglich den erwarteten, noch unbenutzten Queue-Index: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index.
+
+## Vereinfachte Oberfläche
+
+Seitennavigation, Statistik-Kacheln und Marketing-Landing entfernt. Startseite und angemeldete Ansicht nutzen dieselbe einfache Linkeingabe. Ergebnisse bleiben slideweise getrennt und erhalten Zeilenumbrüche; Kopieren und drei Exportformate bleiben verfügbar. Verlauf und Originalbeschreibung sind eingeklappt. Nicht angemeldete Nutzer werden vor der Extraktion zur Anmeldung geführt; der eingegebene Link bleibt tabbezogen erhalten. Exakte Schriftgrößen und Bildpositionen werden nicht rekonstruiert. Produktionsbuild (Webpack), TypeScript und HTTP-Smoke bestanden. Browser-E2E weiterhin nicht ausgeführt.

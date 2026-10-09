@@ -2,9 +2,9 @@ import { test, expect } from "@playwright/test";
 test("landing and login work without horizontal overflow", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Gute Inhalte/ }),
+    page.getByRole("heading", { name: /Carousel rein/ }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Kostenlos starten" }).click();
+  await page.getByRole("link", { name: "Anmelden" }).click();
   await expect(page.getByLabel("E-Mail")).toBeVisible();
   await expect(page.getByLabel("Passwort")).toBeVisible();
   expect(

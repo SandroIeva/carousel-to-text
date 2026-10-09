@@ -30,7 +30,7 @@ try {
   }
   assert.ok(ready, logs);
   const home = await fetch(base);
-  assert.match(await home.text(), /Gute Inhalte/);
+  assert.match(await home.text(), /Carousel rein/);
   assert.equal(home.headers.get("x-content-type-options"), "nosniff");
   const login = await fetch(base + "/login");
   assert.match(await login.text(), /Dein Text-Workspace/);

@@ -17,11 +17,11 @@ Siehe [DEPLOYMENT.md](DEPLOYMENT.md) für Supabase und Vercel. Ohne Konfiguratio
 
 ## Implementiert
 
-- Minimalistisches responsives Dashboard, Login und Registrierung mit Supabase Auth, Bestätigungslink und Logout.
+- Schlichte responsive Oberfläche mit Linkfeld und slideweise gegliedertem Text, Login und Registrierung mit Supabase Auth, Bestätigungslink und Logout.
 - Instagram-URL validieren, Apify-Actor des MVPs asynchron starten, Carousel laden und Gemini 2.5 Flash-Lite pro Bild aufrufen.
 - Originalsprache, Lesereihenfolge, Überschriften, Listen, Zahlen und Interpunktion im OCR-Prompt erhalten. Keine Übersetzung oder Zusammenfassung. Unlesbare Stellen explizit kennzeichnen.
 - Alle gelieferten Slide-Positionen erhalten, einschließlich Video- und Fehler-Platzhaltern. Maximal 25 Slides; größere Carousels werden ausdrücklich abgelehnt statt still gekürzt. Videos werden nicht transkribiert.
-- Eigener Verlauf, Fortschritt, Ergebnissuche innerhalb der letzten 100 Extraktionen, Markdown/TXT/JSON-Export und Löschen abgeschlossener Extraktionen.
+- Eingeklappter eigener Verlauf (letzte 100 Extraktionen), Fortschritt, Text kopieren, Markdown/TXT/JSON-Export und Löschen abgeschlossener Extraktionen.
 - Gespeicherte Queue mit Lease pro Job, Fortsetzung durch Dashboard oder geschützten Cron-Endpunkt.
 - Atomare Nutzungslimits: standardmäßig 30 Extraktionen pro UTC-Kalendermonat, maximal drei offene Jobs pro Nutzer und zehn Sekunden zwischen neuen Anfragen. Limits sind pro Nutzer serverseitig konfigurierbar.
 - RLS auf allen drei Tabellen, kein direkter Client-Schreibzugriff auf Jobs, Kontingente oder Limits. Nutzer können nur eigene abgeschlossene Ergebnisse löschen. Kontingente bleiben auch nach dem Löschen erhalten.
