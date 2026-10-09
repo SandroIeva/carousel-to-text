@@ -127,7 +127,87 @@ small {
 }
 .input-row {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  min-height: 88px;
+  padding: 12px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #f4f5f8;
+  transition:
+    background 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease;
+}
+.input-row:hover,
+.input-row:focus-within {
+  background: #fff;
+  border-color: #d8e7ff;
+  box-shadow:
+    0 0 0 4px #edf4ff,
+    0 8px 30px rgb(37 99 235 / 9%);
+}
+.input-row input {
+  flex: 1;
+  padding: 16px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 18px;
+}
+.input-row input::placeholder {
+  color: #757c89;
+}
+.input-row input:focus {
+  outline: none;
+}
+.input-row .extract-button {
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #2563eb;
+  transition:
+    background 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+.input-row .extract-button:hover:not(:disabled) {
+  opacity: 1;
+  background: #1d4ed8;
+  box-shadow: 0 4px 16px rgb(37 99 235 / 25%);
+  transform: scale(1.04);
+}
+.extract-button svg {
+  transition: transform 200ms ease;
+}
+.extract-button:hover:not(:disabled) svg {
+  transform: translateX(2px);
+}
+.extract-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: extract-spin 800ms linear infinite;
+}
+@keyframes extract-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .input-row,
+  .input-row .extract-button,
+  .extract-button svg {
+    transition: none;
+  }
+  .extract-spinner {
+    animation: none;
+  }
 }
 .composer .notice {
   margin: 16px 0 0;
@@ -275,10 +355,18 @@ summary {
     padding-top: 58px;
   }
   .input-row {
-    flex-direction: column;
+    min-height: 76px;
+    padding: 9px;
+    gap: 4px;
   }
-  .input-row button {
-    width: 100%;
+  .input-row input {
+    font-size: 16px;
+    padding: 12px 8px;
+  }
+  .input-row .extract-button {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
   }
   .job-name small {
     max-width: 210px;

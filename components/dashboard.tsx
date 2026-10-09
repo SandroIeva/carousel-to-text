@@ -154,10 +154,33 @@ export default function Dashboard({
                 setUrl(e.target.value);
                 requestId.current = null;
               }}
-              placeholder="https://www.instagram.com/p/…"
+              placeholder="Paste an Instagram link…"
             />
-            <button disabled={busy || (!guest && (!ready || count >= limit))}>
-              {busy ? "Starting…" : "Extract"}
+            <button
+              className="extract-button"
+              aria-label={busy ? "Starting extraction" : "Extract carousel"}
+              title={busy ? "Starting…" : "Extract carousel"}
+              disabled={busy || (!guest && (!ready || count >= limit))}
+            >
+              {busy ? (
+                <span className="extract-spinner" aria-hidden="true" />
+              ) : (
+                <svg
+                  width="25"
+                  height="25"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 12h14M12 5l7 7-7 7"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
           </div>
         </form>
