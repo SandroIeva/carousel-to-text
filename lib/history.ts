@@ -5,3 +5,7 @@ export function hasSavedContent(job: Job) {
     (slide) => slide.status === "completed" && slide.text.trim().length > 0,
   );
 }
+
+export function showExtraction(job: Job) {
+  return !terminal(job.status) || hasSavedContent(job);
+}

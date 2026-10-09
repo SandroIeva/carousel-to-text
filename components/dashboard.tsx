@@ -5,7 +5,7 @@ import { signOut } from "@/app/auth/actions";
 import { terminal, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
-import { hasSavedContent } from "@/lib/history";
+import { hasSavedContent, showExtraction } from "@/lib/history";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
   scraping: "Loading slides",
@@ -46,7 +46,7 @@ export default function Dashboard({
     [dailyCount, setDailyCount] = useState(dailyUsed);
   const requestId = useRef<string | null>(null);
   const reported = useRef(new Set(initial.filter((job) => terminal(job.status)).map((job) => job.id)));
-  const savedJobs = jobs.filter(hasSavedContent);
+  const visibleJobs = jobs.filter(showExtraction);
   useEffect(() => {
     if (!guest) {
       const saved = sessionStorage.getItem("carousel-url");
@@ -228,18 +228,13 @@ export default function Dashboard({
           <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>
-      {!guest && active && (
-        <p className="extraction-progress" role="status">
-          Extracting content… Your result will appear here when it’s ready.
-        </p>
-      )}
-      {!guest && savedJobs.length > 0 && (
+      {!guest && visibleJobs.length > 0 && (
         <section className="extraction-list" aria-label="Saved extractions">
-          {savedJobs.map((job) => (
+          {visibleJobs.map((job) => (
             <SavedExtraction
               key={job.id}
               job={job}
-              initiallyOpen={job.id === newJobId}
+              initiallyOpen={job.id === newJobId || !terminal(job.status)}
               onDelete={remove}
               onError={setError}
             />
@@ -469,9 +464,9 @@ function SavedExtraction({
         </a>
         {!terminal(job.status) && (
           <p role="status">
-            {labels[job.status]}…{" "}
-            {job.slides.filter((s) => s.status !== "pending").length} /{" "}
-            {job.slides.length || "?"} slides
+            {job.status === "processing"
+              ? `Reading slide ${Math.min(job.slides.filter((s) => s.status !== "pending").length + 1, job.slides.length)} of ${job.slides.length}…`
+              : `Loading ${platformLabel(job.url)} post…`}
           </p>
         )}
         {job.error && <p className="notice">{job.error}</p>}
