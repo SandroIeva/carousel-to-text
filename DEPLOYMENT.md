@@ -78,3 +78,11 @@ Diese Live-Abnahme ist noch nicht erfolgt. Erforderlich sind serverseitig konfig
 ## Supabase integration variable aliases
 
 The app also accepts `NEXT_PUBLIC_SUPABASE_PUBLISH_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` for the public key; `SUPABASE_URL` for the URL; and `SUPABASE_SERVICE_ROLE_KEY` for server operations. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` take precedence. All aliases are read only in server modules. Public keys never substitute for server secrets. `POSTGRES_*` variables are unused.
+
+## Google sign-in
+
+Create a Google OAuth client of type Web application in Google Cloud / Google Auth Platform (this is separate from the Gemini API key). Configure the consent screen; if the app is in testing, add the intended test users. Use `https://jpgkkblchzzckoghrsku.supabase.co/auth/v1/callback` as the Authorized redirect URI. In Supabase Authentication > Sign In / Providers > Google, enable Google and enter the OAuth Client ID and Client Secret. These credentials belong in Supabase only, not Vercel public variables.
+
+Set Supabase Site URL to `https://carousel-to-text.vercel.app` and allow `https://carousel-to-text.vercel.app/auth/callback` (plus the local callback when needed). Keep APP_URL equal to the app origin. The server action initiates PKCE OAuth via the existing SSR client and callback exchanges the code for a cookie session. OAuth cancellation returns an English login error. Google sign-in creates an account automatically when needed. Only the normal sign-in scopes are requested.
+
+Provider credentials and a real Google account are required for live end-to-end verification; this has not yet been performed.

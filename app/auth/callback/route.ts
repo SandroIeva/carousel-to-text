@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { sessionClient } from "@/lib/server";
 export async function GET(req: Request) {
   const code = new URL(req.url).searchParams.get("code");
-  if (code) {
+  if (code && !new URL(req.url).searchParams.has("error")) {
     const db = await sessionClient();
     const { error } = await db.auth.exchangeCodeForSession(code);
     if (!error)
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   }
   return NextResponse.redirect(
     new URL(
-      "/login?message=Confirmation+link+is+invalid+or+expired.",
+      "/login?message=Sign-in+could+not+be+completed.+Please+try+again.",
       process.env.APP_URL,
     ),
   );

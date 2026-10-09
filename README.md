@@ -71,3 +71,5 @@ Bei großen Nutzerzahlen sollte der Cron-Batch durch einen dedizierten Queue-Wor
 ## Supabase integration variable aliases
 
 The app also accepts `NEXT_PUBLIC_SUPABASE_PUBLISH_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` for the public key; `SUPABASE_URL` for the URL; and `SUPABASE_SERVICE_ROLE_KEY` for server operations. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` take precedence. All aliases are read only in server modules. Public keys never substitute for server secrets. `POSTGRES_*` variables are unused.
+
+Google sign-in is implemented alongside email/password. Enable the Google provider and configure OAuth credentials in Supabase as described in DEPLOYMENT.md. The Gemini API key does not enable Google login.

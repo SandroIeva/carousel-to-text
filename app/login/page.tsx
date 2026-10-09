@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { authenticate } from "../auth/actions";
+import { authenticate, signInWithGoogle } from "../auth/actions";
 import { configured } from "@/lib/server";
 export default async function Login({
   searchParams,
@@ -26,6 +26,12 @@ export default async function Login({
             Sign in will be available once setup is complete.
           </div>
         )}
+        <form action={signInWithGoogle}>
+          <button className="secondary google-signin" disabled={!configured()}>
+            Continue with Google
+          </button>
+        </form>
+        <div className="auth-divider">or use email</div>
         <form action={authenticate}>
           <label>
             Email

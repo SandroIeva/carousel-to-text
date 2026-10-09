@@ -57,3 +57,32 @@ export async function signOut() {
   await db.auth.signOut();
   redirect("/login");
 }
+
+export async function signInWithGoogle() {
+  if (!configured())
+    redirect(
+      "/login?message=" + encodeURIComponent("Sign in is not configured yet."),
+    );
+  let destination: string | null = null;
+  try {
+    const db = await sessionClient();
+    const { data, error } = await db.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: new URL("/auth/callback", process.env.APP_URL).toString(),
+        skipBrowserRedirect: true,
+      },
+    });
+    if (!error && data.url) destination = data.url;
+  } catch {
+    // Do not expose provider details or credentials to the client.
+  }
+  if (!destination)
+    redirect(
+      "/login?message=" +
+        encodeURIComponent(
+          "Could not start Google sign-in. Please try again or use email.",
+        ),
+    );
+  redirect(destination);
+}

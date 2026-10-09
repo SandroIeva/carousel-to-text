@@ -53,3 +53,7 @@ All interface text, authentication messages, API errors, status labels, metadata
 ## Supabase integration aliases
 
 Session and proxy configuration share server-only alias resolution. Publishable keys take priority over legacy anon keys; server secret takes priority over legacy service_role. No public key fallback for privileged operations. All 14 tests (including configuration/readiness checks), TypeScript production build and HTTP smoke passed. Actual Vercel environment values and live provider operation remain unverified.
+
+## Google login
+
+Added Google OAuth server action using the SSR client with PKCE and a fixed APP_URL callback. Existing callback exchanges the code for a session; denied OAuth returns a generic English message without reflecting provider input. Login button, production build/TypeScript, and HTTP checks including OAuth cancellation passed. Real Google sign-in remains untested until the provider is enabled with OAuth client credentials.

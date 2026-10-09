@@ -33,7 +33,14 @@ try {
   assert.match(await home.text(), /Carousel in/);
   assert.equal(home.headers.get("x-content-type-options"), "nosniff");
   const login = await fetch(base + "/login");
-  assert.match(await login.text(), /Sign in to SlideScript/);
+  const loginHtml = await login.text();
+  assert.match(loginHtml, /Sign in to SlideScript/);
+  assert.match(loginHtml, /Continue with Google/);
+  const cancelledOAuth = await fetch(base + "/auth/callback?error=access_denied&error_description=untrusted", { redirect: "manual" });
+  assert.equal(cancelledOAuth.status, 307);
+  assert.equal(new URL(cancelledOAuth.headers.get("location")).origin, base);
+  assert.equal(new URL(cancelledOAuth.headers.get("location")).pathname, "/login");
+  assert.ok(!cancelledOAuth.headers.get("location").includes("untrusted"));
   const dashboard = await fetch(base + "/dashboard", { redirect: "manual" });
   assert.equal(dashboard.status, 307);
   assert.match(dashboard.headers.get("location"), /login/);
