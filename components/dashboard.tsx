@@ -189,7 +189,7 @@ export default function Dashboard({
               }
             >
               {busy ? (
-                <span className="loader loader-button" aria-hidden="true" />
+                <span className="extract-spinner" aria-hidden="true" />
               ) : (
                 <svg
                   width="25"
@@ -473,7 +473,6 @@ function SavedExtraction({
             <span className="sr-only">Completed</span>
           ) : job.status === "processing" ? (
             <>
-              <span className="loader loader-status" aria-hidden="true" />
               <span className="sr-only">Reading text</span>
             </>
           ) : (
