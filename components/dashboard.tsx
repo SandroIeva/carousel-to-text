@@ -490,7 +490,14 @@ function SavedExtraction({
                 </button>
               )}
             </div>
-            <pre>{s.text || s.error || "Processing…"}</pre>
+            {s.status === "pending" ? (
+              <div className="slide-processing" role="status">
+                <span className="loader loader-slide" aria-hidden="true" />
+                <span>Processing…</span>
+              </div>
+            ) : (
+              <pre>{s.text || s.error || "No text found."}</pre>
+            )}
           </article>
         ))}
         {terminal(job.status) && (
