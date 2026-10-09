@@ -67,3 +67,7 @@ Siehe [VALIDATION.md](VALIDATION.md) für den tatsächlich geprüften Stand und 
 KI-Texterkennung ist nicht garantiert fehlerfrei; das Original bleibt für die Überprüfung verlinkt. Ein fehlgeschlagener Slide kann durch eine neue Extraktion erneut versucht werden. Auch fehlgeschlagene Extraktionen zählen gegen das Limit. Abgebrochene Requests können externe Aufrufe wiederholen; die Queue liefert keine Exactly-once-Garantie für Apify-/Gemini-Kosten. Insbesondere ein Abbruch zwischen Apify-Start und Speicherung der Run-ID kann einen zweiten Actor-Run verursachen.
 
 Bei großen Nutzerzahlen sollte der Cron-Batch durch einen dedizierten Queue-Worker ersetzt werden; der aktuelle Batch verarbeitet maximal drei Jobs pro Aufruf. Billing, Abonnements, Organisationen, Passwort-Zurücksetzen und Admin-Oberfläche sind nicht Bestandteil dieses Auftrags.
+
+## Supabase integration variable aliases
+
+The app also accepts `NEXT_PUBLIC_SUPABASE_PUBLISH_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` for the public key; `SUPABASE_URL` for the URL; and `SUPABASE_SERVICE_ROLE_KEY` for server operations. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` take precedence. All aliases are read only in server modules. Public keys never substitute for server secrets. `POSTGRES_*` variables are unused.

@@ -2,42 +2,37 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { supabasePublicConfig, supabaseServerKey } from "./supabase-config";
 export function configured() {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  );
+  const { url, key } = supabasePublicConfig();
+  return !!(url && key);
 }
 export async function sessionClient() {
   if (!configured()) throw new Error("Supabase is not configured yet.");
+  const { url, key } = supabasePublicConfig();
   const jar = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll: () => jar.getAll(),
-        setAll: (all) => {
-          try {
-            all.forEach(({ name, value, options }) =>
-              jar.set(name, value, options),
-            );
-          } catch {
-            /* Server components: proxy refreshes cookies. */
-          }
-        },
+  return createServerClient(url!, key!, {
+    cookies: {
+      getAll: () => jar.getAll(),
+      setAll: (all) => {
+        try {
+          all.forEach(({ name, value, options }) =>
+            jar.set(name, value, options),
+          );
+        } catch {
+          /* Server components: proxy refreshes cookies. */
+        }
       },
     },
-  );
+  });
 }
 export function admin() {
-  if (!process.env.SUPABASE_SECRET_KEY)
-    throw new Error("Server configuration is missing.");
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SECRET_KEY,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
+  const { url } = supabasePublicConfig();
+  const key = supabaseServerKey();
+  if (!url || !key) throw new Error("Server configuration is missing.");
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 export class HttpError extends Error {
   constructor(
@@ -75,6 +70,6 @@ export function integrationsReady() {
   return !!(
     process.env.APIFY_TOKEN &&
     process.env.GEMINI_API_KEY &&
-    process.env.SUPABASE_SECRET_KEY
+    supabaseServerKey()
   );
 }

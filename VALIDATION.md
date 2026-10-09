@@ -49,3 +49,7 @@ Seitennavigation, Statistik-Kacheln und Marketing-Landing entfernt. Startseite u
 ## English interface
 
 All interface text, authentication messages, API errors, status labels, metadata and export labels use English. The document language is `en`. OCR preserves the source language; unreadable/empty placeholders use English. TypeScript, all 13 tests, production build and HTTP smoke passed after the language change.
+
+## Supabase integration aliases
+
+Session and proxy configuration share server-only alias resolution. Publishable keys take priority over legacy anon keys; server secret takes priority over legacy service_role. No public key fallback for privileged operations. All 14 tests (including configuration/readiness checks), TypeScript production build and HTTP smoke passed. Actual Vercel environment values and live provider operation remain unverified.

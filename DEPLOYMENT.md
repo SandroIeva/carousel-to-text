@@ -74,3 +74,7 @@ Jeder Cron-Aufruf bearbeitet maximal drei Jobs, einen Schritt pro Job. Eine Extr
 8. Abgeschlossene Extraktion löschen; Nutzung bleibt erhalten. Browser-Netzwerk/JS auf privilegierte API-Keys prüfen.
 
 Diese Live-Abnahme ist noch nicht erfolgt. Erforderlich sind serverseitig konfigurierte Apify-, Gemini- und Supabase-Zugangsdaten.
+
+## Supabase integration variable aliases
+
+The app also accepts `NEXT_PUBLIC_SUPABASE_PUBLISH_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` for the public key; `SUPABASE_URL` for the URL; and `SUPABASE_SERVICE_ROLE_KEY` for server operations. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` take precedence. All aliases are read only in server modules. Public keys never substitute for server secrets. `POSTGRES_*` variables are unused.
