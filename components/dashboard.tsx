@@ -161,7 +161,7 @@ export default function Dashboard({
       </header>
       <section className="composer">
         <h1>Link in. Content out.</h1>
-        <p>Paste an Instagram, LinkedIn or Threads link. Get the content.</p>
+        <p>Paste an Instagram, LinkedIn or Threads link (carousels too). Get the content.</p>
         <form onSubmit={start}>
           <label htmlFor="instagram" className="sr-only">
             Post link
