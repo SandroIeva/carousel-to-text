@@ -7,10 +7,27 @@ import type { Job } from "../lib/types";
 import { exportJob } from "../lib/core";
 
 test("adapted title is included in Markdown, TXT and JSON exports", () => {
-  const job = {id:"test",url:"https://www.instagram.com/p/test/",owner:null,caption:null,created_at:"2026-10-12",status:"completed" as const,title:"A fresh title",slides:[{position:1,imageUrl:null,kind:"text" as const,status:"completed" as const,text:"New slide"}]};
-  assert.ok(exportJob(job,"md").body.startsWith("# A fresh title\n"));
-  assert.ok(exportJob(job,"txt").body.startsWith("A fresh title\n"));
-  assert.equal(JSON.parse(exportJob(job,"json").body).title,"A fresh title");
+  const job = {
+    id: "test",
+    url: "https://www.instagram.com/p/test/",
+    owner: null,
+    caption: null,
+    created_at: "2026-10-12",
+    status: "completed" as const,
+    title: "A fresh title",
+    slides: [
+      {
+        position: 1,
+        imageUrl: null,
+        kind: "text" as const,
+        status: "completed" as const,
+        text: "New slide",
+      },
+    ],
+  };
+  assert.ok(exportJob(job, "md").body.startsWith("# A fresh title\n"));
+  assert.ok(exportJob(job, "txt").body.startsWith("A fresh title\n"));
+  assert.equal(JSON.parse(exportJob(job, "json").body).title, "A fresh title");
 });
 test("rewrite generation preserves positions, isolates instructions and rejects incomplete output", async () => {
   const original = globalThis.fetch;
@@ -59,7 +76,10 @@ test("rewrite generation preserves positions, isolates instructions and rejects 
       (await rewriteSlides(source, "For freelancers")).slides[1].position,
       3,
     );
-    assert.equal((await rewriteSlides(source, "For freelancers")).title, "A fresh title");
+    assert.equal(
+      (await rewriteSlides(source, "For freelancers")).title,
+      "A fresh title",
+    );
     globalThis.fetch = async () =>
       Response.json({ candidates: [{ finishReason: "MAX_TOKENS" }] });
     await assert.rejects(() => rewriteSlides(source, ""), /incomplete/);
@@ -208,6 +228,108 @@ test("rewrite database: ownership, shared IP quotas, leases, saved-version prese
       (await db.query("select * from ctt_rewrites where job_id=$1", [id])).rows
         .length,
       0,
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test("saved versions append atomically, resist duplicate completion, scope deletion and retain quota", async () => {
+  const db = new PGlite();
+  const user = "11111111-1111-4111-8111-111111111111",
+    other = "22222222-2222-4222-8222-222222222222";
+  try {
+    await db.exec(
+      `create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema auth,public to anon,authenticated,service_role;grant execute on function auth.uid() to authenticated;insert into auth.users values('${user}'),('${other}');`,
+    );
+    await db.exec(readFileSync("schema.sql", "utf8"));
+    await db.exec("set role service_role");
+    const job = (
+      await db.query<{ id: string }>(
+        "insert into ctt_jobs(user_id,url,request_id,status) values($1,'https://www.instagram.com/p/abc/',$2,'completed') returning id",
+        [user, crypto.randomUUID()],
+      )
+    ).rows[0].id;
+    const versions: string[] = [];
+    for (const angle of ["Casual", "Professional"]) {
+      const token = (
+        await db.query<{ token: string }>(
+          "select ctt_claim_rewrite($1,$2,$3,$4) as token",
+          [user, job, "a".repeat(64), angle],
+        )
+      ).rows[0].token;
+      const result = (
+        await db.query<{ v: { id: string } }>(
+          "select ctt_finish_rewrite($1,$2,$3,$4) as v",
+          [job, token, angle, JSON.stringify([{ position: 1, text: angle }])],
+        )
+      ).rows[0].v;
+      versions.push(result.id);
+      await assert.rejects(
+        () =>
+          db.query("select ctt_finish_rewrite($1,$2,$3,$4)", [
+            job,
+            token,
+            angle,
+            '[{"position":1,"text":"duplicate"}]',
+          ]),
+        /stale/,
+      );
+    }
+    assert.equal(
+      (await db.query("select * from ctt_rewrite_versions")).rows.length,
+      2,
+    );
+    assert.equal(
+      (
+        await db.query<{ deleted: boolean }>(
+          "select ctt_delete_rewrite_version($1,$2,$3) as deleted",
+          [other, job, versions[0]],
+        )
+      ).rows[0].deleted,
+      false,
+    );
+    await db.exec("set role authenticated");
+    await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
+      other,
+    ]);
+    assert.equal(
+      (await db.query("select * from ctt_rewrite_versions")).rows.length,
+      0,
+    );
+    await assert.rejects(
+      () =>
+        db.query("select ctt_delete_rewrite_version($1,$2,$3)", [
+          user,
+          job,
+          versions[0],
+        ]),
+      /permission denied/,
+    );
+    await db.exec("set role service_role");
+    for (const id of versions)
+      await db.query("select ctt_delete_rewrite_version($1,$2,$3)", [
+        user,
+        job,
+        id,
+      ]);
+    assert.equal(
+      (await db.query("select * from ctt_rewrite_versions")).rows.length,
+      0,
+    );
+    assert.deepEqual(
+      (await db.query<{ slides: unknown }>("select slides from ctt_rewrites"))
+        .rows[0].slides,
+      [],
+    );
+    assert.equal(
+      (
+        await db.query<{ used: number }>(
+          "select used from ctt_rewrite_usage where bucket=$1",
+          ["user:" + user],
+        )
+      ).rows[0].used,
+      2,
     );
   } finally {
     await db.close();

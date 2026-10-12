@@ -1,3 +1,4 @@
+import { savedVersion } from "@/lib/saved-version";
 import { identity, errorResponse, HttpError } from "@/lib/server";
 import { exportJob } from "@/lib/core";
 import { terminal, type Job } from "@/lib/types";
@@ -23,14 +24,11 @@ export async function GET(
     const mine = new URL(req.url).searchParams.get("version") === "mine";
     let exported = data as Job & { title?: string | null };
     if (mine) {
-      const { data: version, error: versionError } = await db
-        .from("ctt_rewrites")
-        .select("title,slides")
-        .eq("job_id", id)
-        .maybeSingle();
-      if (versionError) throw versionError;
-      if (!version?.slides?.length)
-        throw new HttpError("No adapted version is available yet.", 404);
+      const version = await savedVersion(
+        db,
+        id,
+        new URL(req.url).searchParams.get("versionId") || undefined,
+      );
       exported = {
         ...exported,
         title: version.title,

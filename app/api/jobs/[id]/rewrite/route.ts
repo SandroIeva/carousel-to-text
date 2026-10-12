@@ -17,13 +17,23 @@ export async function GET(_req: Request, { params }: Context) {
     const { id } = await params;
     const { data, error } = await db
       .from("ctt_rewrites")
-      .select("status,angle,title,slides,error,lease_until,updated_at")
+      .select("status,error,lease_until")
       .eq("job_id", id)
       .maybeSingle();
     if (error) throw error;
-    return Response.json(data, {
-      headers: { "Cache-Control": "private, no-store" },
-    });
+    const versions = await db
+      .from("ctt_rewrite_versions")
+      .select("id,angle,title,slides,created_at")
+      .eq("job_id", id)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+    if (versions.error) throw versions.error;
+    return Response.json(
+      { ...data, versions: versions.data || [] },
+      {
+        headers: { "Cache-Control": "private, no-store" },
+      },
+    );
   } catch (e) {
     return errorResponse(e);
   }
@@ -83,21 +93,12 @@ export async function POST(req: Request, { params }: Context) {
     }
     token = claim.data;
     const { title, slides } = await rewriteSlides(source, body.angle.trim());
-    const saved = await admin()
-      .from("ctt_rewrites")
-      .update({
-        slides,
-        title,
-        status: "ready",
-        error: null,
-        lease_token: null,
-        lease_until: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("job_id", id)
-      .eq("lease_token", token)
-      .select("status,angle,title,slides,error,updated_at")
-      .maybeSingle();
+    const saved = await admin().rpc("ctt_finish_rewrite", {
+      p_job: id,
+      p_token: token,
+      p_title: title,
+      p_slides: slides,
+    });
     if (saved.error) throw saved.error;
     if (!saved.data)
       throw new HttpError(

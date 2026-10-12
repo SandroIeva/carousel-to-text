@@ -1,3 +1,4 @@
+import { savedVersion } from "@/lib/saved-version";
 import { identity, sameOrigin, errorResponse, HttpError } from "@/lib/server";
 import { verifiedEmail } from "@/lib/i7os";
 import { supabasePublicConfig } from "@/lib/supabase-config";
@@ -62,14 +63,7 @@ export async function POST(
         )
         .map((s: { text: string }) => ({ text: s.text }));
       if (body.version === "mine") {
-        const { data: version, error: versionError } = await db
-          .from("ctt_rewrites")
-          .select("title,slides")
-          .eq("job_id", id)
-          .maybeSingle();
-        if (versionError) throw versionError;
-        if (!version?.slides?.length)
-          throw new HttpError("Create your version before importing it.", 409);
+        const version = await savedVersion(db, id, body.versionId);
         slides = version.slides
           .filter((s: { text: string }) => s.text?.trim())
           .map((s: { text: string }) => ({ text: s.text }));

@@ -4,11 +4,13 @@ type Workspace = { id: string; name: string; canWrite: boolean };
 export default function SendToI7OS({
   jobId,
   version,
+  versionId,
   disabled = false,
 }: {
   jobId: string;
   version: "original" | "mine";
   disabled?: boolean;
+  versionId?: string;
 }) {
   const [open, setOpen] = useState(false),
     [workspaces, setWorkspaces] = useState<Workspace[] | null>(null),
@@ -60,6 +62,7 @@ export default function SendToI7OS({
           mode: "document",
           orgId: selected,
           version,
+          versionId,
           visibility: share ? "workspace" : "restricted",
         }),
       );

@@ -7,6 +7,7 @@ import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
 import { hasSavedContent, showExtraction } from "@/lib/history";
 import MakeItMine from "./make-it-mine";
+import I7Benefits from "./i7-benefits";
 import SendToI7OS from "./send-to-i7os";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
@@ -28,6 +29,8 @@ export default function Dashboard({
   dailyUsed = 0,
   quotaExempt = false,
   dailyLimit = DAILY_LIMIT,
+  i7Plan = "free",
+  rewriteLimit = 3,
 }: {
   initial: Job[];
   email: string;
@@ -40,6 +43,8 @@ export default function Dashboard({
   dailyUsed?: number;
   quotaExempt?: boolean;
   dailyLimit?: number;
+  i7Plan?: string;
+  rewriteLimit?: number;
 }) {
   const [jobs, setJobs] = useState<Job[]>(initial),
     [url, setUrl] = useState(""),
@@ -168,7 +173,7 @@ export default function Dashboard({
             </span>
           </Link>
         ) : (
-          <AccountDropdown email={email} avatarUrl={avatarUrl} />
+          <div className="account-controls">{i7Plan !== "free" && <I7Benefits plan={i7Plan} dailyLimit={dailyLimit} rewriteLimit={rewriteLimit} unlimited={quotaExempt}/>}<AccountDropdown email={email} avatarUrl={avatarUrl} /></div>
         )}
       </header>
       <section className="composer">

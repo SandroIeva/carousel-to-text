@@ -56,6 +56,8 @@ export default async function Page() {
       used={usage?.used || 0}
       dailyUsed={daily?.used || 0}
       dailyLimit={membership.dailyLimit}
+      i7Plan={membership.plan}
+      rewriteLimit={membership.rewriteLimit}
       limit={plan?.monthly_limit ?? 30}
       quotaExempt={plan?.quota_exempt === true}
       ready={integrationsReady()}
