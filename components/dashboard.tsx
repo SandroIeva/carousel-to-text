@@ -45,8 +45,15 @@ export default function Dashboard({
     [count, setCount] = useState(used),
     [dailyCount, setDailyCount] = useState(dailyUsed);
   const requestId = useRef<string | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
   const reported = useRef(new Set(initial.filter((job) => terminal(job.status)).map((job) => job.id)));
   const visibleJobs = jobs.filter(showExtraction);
+  const pageCount = Math.max(1, Math.ceil(visibleJobs.length / 10));
+  const currentPage = Math.min(historyPage, pageCount);
+  const pageJobs = visibleJobs.slice((currentPage - 1) * 10, currentPage * 10);
+  useEffect(() => {
+    setHistoryPage((page) => Math.min(page, pageCount));
+  }, [pageCount]);
   useEffect(() => {
     if (!guest) {
       const saved = sessionStorage.getItem("carousel-url");
@@ -122,6 +129,7 @@ export default function Dashboard({
       const all: Job[] = await history.json();
       setJobs(all);
       setNewJobId(b.id);
+      setHistoryPage(1);
       setCount((c) => c + 1);
       setDailyCount((c) => c + 1);
       setUrl("");
@@ -230,7 +238,7 @@ export default function Dashboard({
       </section>
       {!guest && visibleJobs.length > 0 && (
         <section className="extraction-list" aria-label="Saved extractions">
-          {visibleJobs.map((job) => (
+          {pageJobs.map((job) => (
             <SavedExtraction
               key={job.id}
               job={job}
@@ -239,6 +247,17 @@ export default function Dashboard({
               onError={setError}
             />
           ))}
+          {pageCount > 1 && (
+            <nav className="history-pagination" aria-label="Extraction history pages">
+              <button className="text-button" disabled={currentPage === 1} onClick={() => setHistoryPage(currentPage - 1)} aria-label="Previous page">
+                ← Previous
+              </button>
+              <span aria-live="polite">Page {currentPage} of {pageCount}</span>
+              <button className="text-button" disabled={currentPage === pageCount} onClick={() => setHistoryPage(currentPage + 1)} aria-label="Next page">
+                Next →
+              </button>
+            </nav>
+          )}
         </section>
       )}
     </main>

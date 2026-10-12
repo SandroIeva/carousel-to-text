@@ -567,6 +567,21 @@ summary {
   margin-top: 20px;
   border-top: 1px solid var(--border);
 }
+.history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.history-pagination .text-button {
+  padding: 8px;
+}
+.history-pagination button:disabled {
+  opacity: 0.35;
+}
 .saved-extraction {
   border-bottom: 1px solid var(--border);
 }
