@@ -1,5 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
+const tones = [
+  { label: "Natural", value: "" },
+  {
+    label: "Casual",
+    value: "Use a casual, conversational tone with simple everyday language.",
+  },
+  {
+    label: "Professional",
+    value: "Use a professional, serious and clear tone without slang.",
+  },
+  {
+    label: "Bold",
+    value:
+      "Use a bold, direct and confident tone without exaggerating factual claims.",
+  },
+  { label: "Friendly", value: "Use a warm, friendly and approachable tone." },
+];
 type Version = {
   status: "generating" | "ready" | "failed";
   angle: string;
@@ -32,7 +49,7 @@ export default function MakeItMine({
         const v: Version | null = await r.json();
         if (stopped) return;
         setVersion(v);
-        if (v) setAngle(v.angle);
+        if (v) setAngle(tones.some((t) => t.value === v.angle) ? v.angle : "");
         const running =
           v?.status === "generating" &&
           !!v.lease_until &&
@@ -84,17 +101,21 @@ export default function MakeItMine({
   return (
     <div className="make-it-mine">
       <div className="adapt-controls">
-        <label className="sr-only" htmlFor={`angle-${jobId}`}>
-          What’s your angle?
+        <label className="tone-label" htmlFor={`angle-${jobId}`}>
+          Tone
         </label>
-        <input
+        <select
           id={`angle-${jobId}`}
-          maxLength={500}
           value={angle}
           onChange={(e) => setAngle(e.target.value)}
-          placeholder="What’s your angle? (optional)"
           disabled={busy}
-        />
+        >
+          {tones.map((tone) => (
+            <option key={tone.label} value={tone.value}>
+              {tone.label}
+            </option>
+          ))}
+        </select>
         <button
           className="secondary make-mine-button"
           onClick={generate}

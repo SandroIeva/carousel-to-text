@@ -687,6 +687,8 @@ summary {
 .version-section[open] > summary .version-chevron { transform: rotate(180deg); }
 .make-it-mine { margin-top: 24px; }
 .adapt-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.adapt-controls input { flex: 1; min-width: 180px; font-size: 13px; padding: 12px 14px; background: #f6f7fa; border: 0; border-radius: 12px; }
+.adapt-controls select { min-width: 150px; font: inherit; font-size: 13px; padding: 12px 14px; background: #f6f7fa; color: var(--ink); border: 0; border-radius: 12px; cursor: pointer; outline: none; }
+.adapt-controls select:focus-visible { background: #edf2fa; }
+.tone-label { color: var(--muted); font-size: 13px; }
 .make-mine-button { font-size: 13px; padding: 12px 18px; border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) { .version-chevron { transition: none; } }
