@@ -20,6 +20,7 @@ const tones = [
 type Version = {
   status: "generating" | "ready" | "failed";
   angle: string;
+  title?: string | null;
   slides: { position: number; text: string }[];
   error: string | null;
   lease_until?: string;
@@ -137,7 +138,15 @@ export default function MakeItMine({
           <summary>
             Your version{" "}
             <span className="chevron version-chevron" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="m6 9 6 6 6-6"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </span>
           </summary>
           {busy && (
@@ -150,6 +159,20 @@ export default function MakeItMine({
             <p className="notice" role="alert">
               {error || version?.error}
             </p>
+          )}
+          {version?.title && (
+            <article className="slide">
+              <div className="section-title">
+                <small className="slide-label">Title</small>
+                <button
+                  className="text-button"
+                  onClick={() => copy(version.title || "", "title")}
+                >
+                  {copied === "title" ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <pre>{version.title}</pre>
+            </article>
           )}
           {version?.slides.map((s) => (
             <article className="slide" key={s.position}>
@@ -173,8 +196,13 @@ export default function MakeItMine({
                 className="secondary"
                 onClick={() =>
                   copy(
-                    version.slides
-                      .map((s) => `Slide ${s.position}\n${s.text}`)
+                    [
+                      version.title || "",
+                      version.slides
+                        .map((s) => `Slide ${s.position}\n${s.text}`)
+                        .join("\n\n"),
+                    ]
+                      .filter(Boolean)
                       .join("\n\n"),
                     "all",
                   )

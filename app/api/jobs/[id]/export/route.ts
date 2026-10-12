@@ -21,12 +21,28 @@ export async function GET(
     if (!terminal(data.status))
       throw new HttpError("Extraction is still running.", 409);
     const mine = new URL(req.url).searchParams.get("version") === "mine";
-    let exported = data as Job;
+    let exported = data as Job & { title?: string | null };
     if (mine) {
-      const { data: version, error: versionError } = await db.from("ctt_rewrites").select("slides").eq("job_id", id).maybeSingle();
+      const { data: version, error: versionError } = await db
+        .from("ctt_rewrites")
+        .select("title,slides")
+        .eq("job_id", id)
+        .maybeSingle();
       if (versionError) throw versionError;
-      if (!version?.slides?.length) throw new HttpError("No adapted version is available yet.", 404);
-      exported = { ...exported, caption: null, owner: null, slides: version.slides.map((s: {position:number;text:string}) => ({...s, imageUrl:null, kind:"text" as const, status:"completed" as const})) };
+      if (!version?.slides?.length)
+        throw new HttpError("No adapted version is available yet.", 404);
+      exported = {
+        ...exported,
+        title: version.title,
+        caption: null,
+        owner: null,
+        slides: version.slides.map((s: { position: number; text: string }) => ({
+          ...s,
+          imageUrl: null,
+          kind: "text" as const,
+          status: "completed" as const,
+        })),
+      };
     }
     const file = exportJob(exported, format);
     return new Response(file.body, {

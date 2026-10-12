@@ -128,3 +128,9 @@ Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters
 - Slide Scrape migration applied. Live transactional paid quota/expiry tests passed and were rolled back. i7OS endpoint responds 401 with no-store when credentials are absent; i7OS agent reports its confirmed-email lookup deployed. No changes pushed to the i7OS repository from this workspace.
 - Typecheck, 33 tests and production build passed. No DB security advisor findings; pre-existing password protection warning remains. Full two-app paid-account test requires a real signed-in session and remains pending; no credentials were extracted or logged.
 
+# Adapted titles — 2026-10-12
+
+- Gemini generates a required non-empty title (max 200 characters) alongside slide text. Title and slides persist atomically; failed regeneration preserves the prior successful title and slides.
+- Your version shows a separate copyable title. Copy all and Markdown/TXT/JSON exports include it. Existing saved versions remain compatible and gain a title when regenerated.
+- Additive title column migration applied and verified. Typecheck and all 34 tests passed, including provider title validation and exports.
+

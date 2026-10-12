@@ -4,6 +4,14 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import { rewriteSource, rewriteSlides } from "../lib/rewrite";
 import type { Job } from "../lib/types";
+import { exportJob } from "../lib/core";
+
+test("adapted title is included in Markdown, TXT and JSON exports", () => {
+  const job = {id:"test",url:"https://www.instagram.com/p/test/",owner:null,caption:null,created_at:"2026-10-12",status:"completed" as const,title:"A fresh title",slides:[{position:1,imageUrl:null,kind:"text" as const,status:"completed" as const,text:"New slide"}]};
+  assert.ok(exportJob(job,"md").body.startsWith("# A fresh title\n"));
+  assert.ok(exportJob(job,"txt").body.startsWith("A fresh title\n"));
+  assert.equal(JSON.parse(exportJob(job,"json").body).title,"A fresh title");
+});
 test("rewrite generation preserves positions, isolates instructions and rejects incomplete output", async () => {
   const original = globalThis.fetch;
   const previous = process.env.GEMINI_API_KEY;
@@ -34,6 +42,7 @@ test("rewrite generation preserves positions, isolates instructions and rejects 
               parts: [
                 {
                   text: JSON.stringify({
+                    title: "A fresh title",
                     slides: [
                       { position: 1, text: "New hook" },
                       { position: 3, text: "New insight" },
@@ -47,9 +56,10 @@ test("rewrite generation preserves positions, isolates instructions and rejects 
       });
     };
     assert.equal(
-      (await rewriteSlides(source, "For freelancers"))[1].position,
+      (await rewriteSlides(source, "For freelancers")).slides[1].position,
       3,
     );
+    assert.equal((await rewriteSlides(source, "For freelancers")).title, "A fresh title");
     globalThis.fetch = async () =>
       Response.json({ candidates: [{ finishReason: "MAX_TOKENS" }] });
     await assert.rejects(() => rewriteSlides(source, ""), /incomplete/);
@@ -60,7 +70,9 @@ test("rewrite generation preserves positions, isolates instructions and rejects 
             finishReason: "STOP",
             content: {
               parts: [
-                { text: '{"slides":[{"position":1,"text":"only one"}]}' },
+                {
+                  text: '{"title":"Fresh title","slides":[{"position":1,"text":"only one"}]}',
+                },
               ],
             },
           },
@@ -85,17 +97,43 @@ test("rewrite retries one temporary provider failure without retrying credential
   try {
     globalThis.fetch = async () => {
       calls++;
-      return calls === 1 ? new Response("Unavailable", {status:503}) : Response.json({candidates:[{finishReason:"STOP",content:{parts:[{text:'{"slides":[{"position":1,"text":"New version"}]}'}]}}]});
+      return calls === 1
+        ? new Response("Unavailable", { status: 503 })
+        : Response.json({
+            candidates: [
+              {
+                finishReason: "STOP",
+                content: {
+                  parts: [
+                    {
+                      text: '{"title":"Fresh title","slides":[{"position":1,"text":"New version"}]}',
+                    },
+                  ],
+                },
+              },
+            ],
+          });
     };
-    assert.equal((await rewriteSlides([{position:1,text:"Original"}], ""))[0].text, "New version");
+    assert.equal(
+      (await rewriteSlides([{ position: 1, text: "Original" }], "")).slides[0]
+        .text,
+      "New version",
+    );
     assert.equal(calls, 2);
     calls = 0;
-    globalThis.fetch = async () => {calls++;return new Response("Denied", {status:403});};
-    await assert.rejects(() => rewriteSlides([{position:1,text:"Original"}], ""), /Access denied/);
+    globalThis.fetch = async () => {
+      calls++;
+      return new Response("Denied", { status: 403 });
+    };
+    await assert.rejects(
+      () => rewriteSlides([{ position: 1, text: "Original" }], ""),
+      /Access denied/,
+    );
     assert.equal(calls, 1);
   } finally {
     globalThis.fetch = original;
-    if(previous===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=previous;
+    if (previous === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = previous;
   }
 });
 test("rewrite database: ownership, shared IP quotas, leases, saved-version preservation and cascade", async () => {

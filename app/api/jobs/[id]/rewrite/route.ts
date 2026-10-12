@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: Context) {
     const { id } = await params;
     const { data, error } = await db
       .from("ctt_rewrites")
-      .select("status,angle,slides,error,lease_until,updated_at")
+      .select("status,angle,title,slides,error,lease_until,updated_at")
       .eq("job_id", id)
       .maybeSingle();
     if (error) throw error;
@@ -82,11 +82,12 @@ export async function POST(req: Request, { params }: Context) {
       throw claim.error;
     }
     token = claim.data;
-    const slides = await rewriteSlides(source, body.angle.trim());
+    const { title, slides } = await rewriteSlides(source, body.angle.trim());
     const saved = await admin()
       .from("ctt_rewrites")
       .update({
         slides,
+        title,
         status: "ready",
         error: null,
         lease_token: null,
@@ -95,7 +96,7 @@ export async function POST(req: Request, { params }: Context) {
       })
       .eq("job_id", id)
       .eq("lease_token", token)
-      .select("status,angle,slides,error,updated_at")
+      .select("status,angle,title,slides,error,updated_at")
       .maybeSingle();
     if (saved.error) throw saved.error;
     if (!saved.data)

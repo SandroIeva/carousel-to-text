@@ -316,3 +316,6 @@ end $$;
 revoke all on function public.ctt_claim_rewrite(uuid,uuid,text,text) from public,anon,authenticated;
 grant execute on function public.ctt_claim_rewrite(uuid,uuid,text,text) to service_role;
 commit;
+begin;
+alter table public.ctt_rewrites add column title text check(title is null or (length(title)>0 and length(title)<=200));
+commit;

@@ -137,7 +137,7 @@ export function exportJob(
   job: Pick<
     Job,
     "id" | "url" | "owner" | "caption" | "slides" | "created_at" | "status"
-  >,
+  > & { title?: string | null },
   format: string,
 ) {
   const slideText = (s: Slide) =>
@@ -152,6 +152,7 @@ export function exportJob(
           createdAt: job.created_at,
           status: job.status,
           caption: job.caption,
+          ...(job.title ? { title: job.title } : {}),
           slides: job.slides.map((s) => ({
             position: s.position,
             kind: s.kind,
@@ -167,7 +168,7 @@ export function exportJob(
       extension: "json",
     };
   const md =
-    `# ${platformLabel(job.url)} Content\n\nSource: ${job.url}\nCreator: ${job.owner || "unknown"}\nSlides: ${job.slides.length}\n` +
+    `# ${job.title || `${platformLabel(job.url)} Content`}\n\nSource: ${job.url}\nCreator: ${job.owner || "unknown"}\nSlides: ${job.slides.length}\n` +
     job.slides
       .map((s) => `\n---\n\n## Slide ${s.position}\n\n${slideText(s)}\n`)
       .join("") +
@@ -177,7 +178,7 @@ export function exportJob(
   if (format === "txt")
     return {
       body:
-        `${platformLabel(job.url)} Content\nSource: ${job.url}\nCreator: ${job.owner || "unknown"}\n\n` +
+        `${job.title || `${platformLabel(job.url)} Content`}\nSource: ${job.url}\nCreator: ${job.owner || "unknown"}\n\n` +
         job.slides
           .map(
             (s) =>
