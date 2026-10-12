@@ -77,6 +77,27 @@ test("rewrite generation preserves positions, isolates instructions and rejects 
     else process.env.GEMINI_API_KEY = previous;
   }
 });
+test("rewrite retries one temporary provider failure without retrying credential errors", async () => {
+  const original = globalThis.fetch;
+  const previous = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = "test-secret";
+  let calls = 0;
+  try {
+    globalThis.fetch = async () => {
+      calls++;
+      return calls === 1 ? new Response("Unavailable", {status:503}) : Response.json({candidates:[{finishReason:"STOP",content:{parts:[{text:'{"slides":[{"position":1,"text":"New version"}]}'}]}}]});
+    };
+    assert.equal((await rewriteSlides([{position:1,text:"Original"}], ""))[0].text, "New version");
+    assert.equal(calls, 2);
+    calls = 0;
+    globalThis.fetch = async () => {calls++;return new Response("Denied", {status:403});};
+    await assert.rejects(() => rewriteSlides([{position:1,text:"Original"}], ""), /Access denied/);
+    assert.equal(calls, 1);
+  } finally {
+    globalThis.fetch = original;
+    if(previous===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=previous;
+  }
+});
 test("rewrite database: ownership, shared IP quotas, leases, saved-version preservation and cascade", async () => {
   const db = new PGlite();
   const a = "11111111-1111-4111-8111-111111111111",

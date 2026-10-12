@@ -688,7 +688,15 @@ summary {
 .make-it-mine { margin-top: 24px; }
 .adapt-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .adapt-controls select { min-width: 150px; font: inherit; font-size: 13px; padding: 12px 14px; background: #f6f7fa; color: var(--ink); border: 0; border-radius: 12px; cursor: pointer; outline: none; }
-.adapt-controls select:focus-visible { background: #edf2fa; }
+.adapt-controls select:focus-visible { background-color: #edf2fa; }
+.adapt-controls select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%23777' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
 .tone-label { color: var(--muted); font-size: 13px; }
 .make-mine-button { font-size: 13px; padding: 12px 18px; border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) { .version-chevron svg { transition: none; } }
