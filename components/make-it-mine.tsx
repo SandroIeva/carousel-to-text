@@ -136,8 +136,8 @@ export default function MakeItMine({
         >
           <summary>
             Your version{" "}
-            <span className="version-chevron" aria-hidden="true">
-              ⌄
+            <span className="chevron version-chevron" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
           </summary>
           {busy && (

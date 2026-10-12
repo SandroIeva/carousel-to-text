@@ -402,7 +402,7 @@ function SavedExtraction({
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [open, setOpen] = useState(initiallyOpen);
-  const [originalOpen, setOriginalOpen] = useState(true);
+  const [originalOpen, setOriginalOpen] = useState(!terminal(job.status));
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<Animation | null>(null);
@@ -532,8 +532,11 @@ function SavedExtraction({
           </div>
         )}
         {job.error && <p className="notice">{job.error}</p>}
+        {terminal(job.status) && job.slides.some(s => s.status === "completed" && s.text.trim()) && (
+          <MakeItMine jobId={job.id} onReady={() => setOriginalOpen(false)} />
+        )}
         <details className="version-section original-slides" open={originalOpen} onToggle={(e) => setOriginalOpen(e.currentTarget.open)}>
-          <summary>Original slides <span className="version-chevron" aria-hidden="true">⌄</span></summary>
+          <summary>Original slides <span className="chevron version-chevron" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></span></summary>
         {job.slides.map((s) => (
           <article className="slide" key={s.position}>
             <div className="section-title">
@@ -615,9 +618,6 @@ function SavedExtraction({
           </details>
         )}
         </details>
-        {terminal(job.status) && job.slides.some(s => s.status === "completed" && s.text.trim()) && (
-          <MakeItMine jobId={job.id} onReady={() => setOriginalOpen(false)} />
-        )}
       </div>
     </details>
   );
