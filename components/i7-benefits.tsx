@@ -11,6 +11,13 @@ export default function I7Benefits({
   rewriteLimit: number;
   unlimited: boolean;
 }) {
+  const planLabel =
+    (
+      { starter: "Starter", pro: "Pro", agency: "Max" } as Record<
+        string,
+        string
+      >
+    )[plan] || plan;
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -47,19 +54,27 @@ export default function I7Benefits({
         aria-controls="i7-benefits"
         onClick={() => setOpen(!open)}
       >
-        i7OS User <span aria-hidden="true">⌄</span>
+        i7OS {planLabel}{" "}
+        <svg
+          className="i7-chip-chevron"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="m6 9 6 6 6-6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
       {open && (
         <div className="account-dropdown i7-benefits-panel" id="i7-benefits">
-          <strong>
-            i7OS{" "}
-            {(
-              { starter: "Basic", pro: "Pro", agency: "Max" } as Record<
-                string,
-                string
-              >
-            )[plan] || plan}
-          </strong>
+          <strong>i7OS {planLabel}</strong>
           <p>Your benefits</p>
           <ul>
             <li>
@@ -81,7 +96,22 @@ export default function I7Benefits({
             target="_blank"
             rel="noopener noreferrer"
           >
-            Open i7OS ↗
+            Open i7OS{" "}
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12h14m-6-6 6 6-6 6"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </a>
         </div>
       )}

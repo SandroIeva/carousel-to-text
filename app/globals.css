@@ -707,13 +707,17 @@ summary {
 .i7-import-success { display: flex; flex-direction: column; gap: 8px; }
 .i7-import-panel small { color: var(--muted); }
 
-.account-controls { display:flex; align-items:center; gap:12px; }
+.account-controls { position:relative; display:flex; align-items:center; gap:12px; }
 .i7-user-chip,.tone-chip { border:0; border-radius:999px; background:#eef4ff; color:#3561a4; font-size:11px; font-weight:500; letter-spacing:.1px; padding:5px 10px; white-space:nowrap; }
 .i7-user-chip { cursor:pointer; display:flex; align-items:center; gap:7px; padding:7px 12px; }
 .i7-user-chip:hover { background:#e3edff; }
-.i7-benefits-panel { width:280px; padding:20px; }
-.i7-benefits-panel p { margin:12px 0 8px; font-size:12px; color:#777; }
-.i7-benefits-panel ul { padding-left:16px; margin:0 0 15px; font-size:12px; line-height:1.8; }
+.i7-benefits { position:static; }
+.i7-benefits-panel { width:360px; padding:22px; font-size:15px; right:0; }
+.i7-chip-chevron { display:block; flex-shrink:0; transition:transform 200ms ease; }
+.i7-user-chip[aria-expanded="true"] .i7-chip-chevron { transform:rotate(180deg); }
+.i7-benefits-panel > a { display:inline-flex; align-items:center; gap:8px; font-size:14px; }
+.i7-benefits-panel p { margin:12px 0 8px; font-size:14px; color:#777; }
+.i7-benefits-panel ul { padding-left:16px; margin:0 0 18px; font-size:14px; line-height:1.8; }
 .tone-chip { margin-left:10px; }
-@media(max-width:480px) { .account-controls {gap:8px;} .i7-user-chip {font-size:10px;padding:6px 9px;} .i7-benefits-panel {width:250px;right:-48px;} }
+@media(max-width:480px) { .account-controls {gap:8px;} .i7-user-chip {font-size:10px;padding:6px 9px;} .i7-benefits-panel {width:360px;right:0;} }
 .version-section > summary .tone-chip { margin-right:auto; }
