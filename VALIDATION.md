@@ -121,3 +121,10 @@ Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters
 - Typecheck, production build and all 30 tests passed. Tests cover provider schema/positions/truncation, secrets in headers, cross-user access denial, quotas, concurrent generation, regeneration preservation and cascade. Live lease/preservation test passed in a rolled-back transaction; client RPC privilege denied. Security advisor: no database findings, existing password protection warning only.
 - Real Gemini end-to-end generation not run locally: credentials remain in Vercel. Model generation rewrites wording and angle; factual correctness and independence still need editorial review before publishing.
 
+# Automatic i7OS plan recognition — 2026-10-12
+
+- Confirmed email is taken from Slide Scrape's verified Auth user; the existing session and public project key are sent only to the configured HTTPS i7OS entitlement endpoint. No caller-supplied email, JWT-only decoding, alias collapsing or extra login.
+- Effective paid Basic/Pro/Max limits are 10/25/50 daily for scraping and rewriting. Free limits, aggregate IP buckets, owner exemption, rate/concurrency protections and RLS stay enforced. Checks cache for 60s, invalidate on changed email, and downgrade on unavailable/malformed/unpaid results. SQL premium expiry is 120s.
+- Slide Scrape migration applied. Live transactional paid quota/expiry tests passed and were rolled back. i7OS endpoint responds 401 with no-store when credentials are absent; i7OS agent reports its confirmed-email lookup deployed. No changes pushed to the i7OS repository from this workspace.
+- Typecheck, 33 tests and production build passed. No DB security advisor findings; pre-existing password protection warning remains. Full two-app paid-account test requires a real signed-in session and remains pending; no credentials were extracted or logged.
+

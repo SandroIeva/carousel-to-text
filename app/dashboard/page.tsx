@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { configured, identity, integrationsReady } from "@/lib/server";
 import Dashboard from "@/components/dashboard";
 import { usageDay } from "@/lib/daily-limit";
+import { syncI7Plan } from "@/lib/i7os";
 export const dynamic = "force-dynamic";
 export default async function Page() {
   if (!configured()) redirect("/login");
@@ -12,6 +13,7 @@ export default async function Page() {
     redirect("/login");
   }
   const { db, user } = account;
+  const membership = await syncI7Plan(db, user);
   const [
     { data: jobs, error },
     { data: plan },
@@ -53,6 +55,7 @@ export default async function Page() {
       }
       used={usage?.used || 0}
       dailyUsed={daily?.used || 0}
+      dailyLimit={membership.dailyLimit}
       limit={plan?.monthly_limit ?? 30}
       quotaExempt={plan?.quota_exempt === true}
       ready={integrationsReady()}

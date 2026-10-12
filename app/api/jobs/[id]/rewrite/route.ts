@@ -6,6 +6,7 @@ import {
   HttpError,
 } from "@/lib/server";
 import { requestIpHash } from "@/lib/ip-limit";
+import { syncI7Plan } from "@/lib/i7os";
 import { rewriteSource, rewriteSlides } from "@/lib/rewrite";
 import { ProviderFailure } from "@/lib/provider-error";
 export const maxDuration = 60;
@@ -63,6 +64,7 @@ export async function POST(req: Request, { params }: Context) {
     } catch {
       throw new HttpError("Could not verify your network.", 503);
     }
+    const membership = await syncI7Plan(db, user);
     const claim = await admin().rpc("ctt_claim_rewrite", {
       p_user: user.id,
       p_job: id,
@@ -72,7 +74,7 @@ export async function POST(req: Request, { params }: Context) {
     if (claim.error) {
       if (claim.error.message.includes("rewrite_quota"))
         throw new HttpError(
-          "Your account or network has reached its daily limit of 3 adaptations. Try again after midnight (Europe/Berlin).",
+          `Your account or network has reached its daily limit of ${membership.rewriteLimit} adaptations. Try again after midnight (Europe/Berlin).`,
           429,
         );
       if (claim.error.message.includes("rewrite_busy"))

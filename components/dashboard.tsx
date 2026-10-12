@@ -26,6 +26,7 @@ export default function Dashboard({
   avatarUrl = "",
   dailyUsed = 0,
   quotaExempt = false,
+  dailyLimit = DAILY_LIMIT,
 }: {
   initial: Job[];
   email: string;
@@ -37,6 +38,7 @@ export default function Dashboard({
   avatarUrl?: string;
   dailyUsed?: number;
   quotaExempt?: boolean;
+  dailyLimit?: number;
 }) {
   const [jobs, setJobs] = useState<Job[]>(initial),
     [url, setUrl] = useState(""),
@@ -194,7 +196,7 @@ export default function Dashboard({
               disabled={
                 busy ||
                 (!guest &&
-                  (!ready || (!quotaExempt && (count >= limit || dailyCount >= DAILY_LIMIT))))
+                  (!ready || (!quotaExempt && (count >= limit || dailyCount >= dailyLimit))))
               }
             >
               {busy ? (
@@ -227,13 +229,13 @@ export default function Dashboard({
         {!guest && !ready && (
           <p className="notice">Extraction is not set up yet.</p>
         )}
-        {!guest && !quotaExempt && !error && dailyCount >= DAILY_LIMIT && (
+        {!guest && !quotaExempt && !error && dailyCount >= dailyLimit && (
           <p className="notice">
-            Your daily limit of 3 extractions has been reached. Try again after
+            Your daily limit of {dailyLimit} extractions has been reached. Try again after
             midnight (Europe/Berlin).
           </p>
         )}
-        {!guest && !quotaExempt && !error && dailyCount < DAILY_LIMIT && count >= limit && (
+        {!guest && !quotaExempt && !error && dailyCount < dailyLimit && count >= limit && (
           <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>

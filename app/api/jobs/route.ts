@@ -9,6 +9,7 @@ import {
 import { normalizeUrl } from "@/lib/core";
 import { requestIpHash } from "@/lib/ip-limit";
 import { resolveLinkedInUrl } from "@/lib/linkedin-url";
+import { syncI7Plan } from "@/lib/i7os";
 export async function GET() {
   try {
     const { db } = await identity();
@@ -26,7 +27,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     sameOrigin(req);
-    const { user } = await identity();
+    const { db, user } = await identity();
     if (!integrationsReady())
       throw new HttpError("Extraction is not set up on the server yet.", 503);
     const text = await req.text();
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
         503,
       );
     }
+    const membership = await syncI7Plan(db, user);
     const { data, error } = await admin().rpc("ctt_reserve_job", {
       p_user: user.id,
       p_url: url,
@@ -76,12 +78,12 @@ export async function POST(req: Request) {
     if (error) {
       if (error.message.includes("daily_user_quota"))
         throw new HttpError(
-          "Your daily limit of 3 extractions has been reached. Try again after midnight (Europe/Berlin).",
+          `Your daily limit of ${membership.dailyLimit} extractions has been reached. Try again after midnight (Europe/Berlin).`,
           429,
         );
       if (error.message.includes("daily_ip_quota"))
         throw new HttpError(
-          "This network has reached its daily limit of 3 extractions across all accounts. Try again after midnight (Europe/Berlin).",
+          `This network has reached its daily limit of ${membership.dailyLimit} extractions across all accounts. Try again after midnight (Europe/Berlin).`,
           429,
         );
       if (error.message.includes("quota"))
