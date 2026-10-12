@@ -6,6 +6,7 @@ import { terminal, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
 import { hasSavedContent, showExtraction } from "@/lib/history";
+import MakeItMine from "./make-it-mine";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
   scraping: "Loading slides",
@@ -401,6 +402,7 @@ function SavedExtraction({
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [open, setOpen] = useState(initiallyOpen);
+  const [originalOpen, setOriginalOpen] = useState(true);
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<Animation | null>(null);
@@ -530,6 +532,8 @@ function SavedExtraction({
           </div>
         )}
         {job.error && <p className="notice">{job.error}</p>}
+        <details className="version-section original-slides" open={originalOpen} onToggle={(e) => setOriginalOpen(e.currentTarget.open)}>
+          <summary>Original slides <span className="version-chevron" aria-hidden="true">⌄</span></summary>
         {job.slides.map((s) => (
           <article className="slide" key={s.position}>
             <div className="section-title">
@@ -609,6 +613,10 @@ function SavedExtraction({
             </button>
             <pre>{job.caption}</pre>
           </details>
+        )}
+        </details>
+        {terminal(job.status) && job.slides.some(s => s.status === "completed" && s.text.trim()) && (
+          <MakeItMine jobId={job.id} onReady={() => setOriginalOpen(false)} />
         )}
       </div>
     </details>

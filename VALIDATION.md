@@ -113,3 +113,11 @@ Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters
 - Empty dataset diagnostics inspect the run's OUTPUT summary and report budget stops accurately without exposing arbitrary provider responses.
 - Typecheck and 28 tests passed, including Instagram budget/item count and budget error handling. End-to-end rerun needs deployed credentials; no paid retry made during diagnosis.
 
+# Make it mine — 2026-10-12
+
+- Added optional audience/tone/angle input and server-side Gemini rewriting with JSON output validation. Original readable slide positions are preserved; unreadable/failed slides are excluded. No Apify calls or new keys needed.
+- Original slides and Your version have separate disclosure sections, slide copy, Copy all and Markdown/TXT/JSON exports. Original closes when the new version is ready. Latest successful version persists across reloads and remains intact during regeneration or provider failure.
+- Additive migration applied: owner-read-only rewrite rows, service-only writes and quota counters, service-only atomic claim RPC, 90-second generation lease, cascading deletion with original job. Three attempts per Berlin day per account and IP; existing quota-exempt owner bypass remains.
+- Typecheck, production build and all 30 tests passed. Tests cover provider schema/positions/truncation, secrets in headers, cross-user access denial, quotas, concurrent generation, regeneration preservation and cascade. Live lease/preservation test passed in a rolled-back transaction; client RPC privilege denied. Security advisor: no database findings, existing password protection warning only.
+- Real Gemini end-to-end generation not run locally: credentials remain in Vercel. Model generation rewrites wording and angle; factual correctness and independence still need editorial review before publishing.
+

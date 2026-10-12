@@ -667,3 +667,26 @@ summary {
 .auth .auth-confirmation {
   text-align: center;
 }
+
+.version-section {
+ margin-top: 16px;
+ border-top: 1px solid var(--border);
+}
+.version-section > summary {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 16px 0;
+ list-style: none;
+ cursor: pointer;
+ font-size: 13px;
+ font-weight: 600;
+}
+.version-section > summary::-webkit-details-marker { display: none; }
+.version-chevron { transition: transform 250ms ease; color: var(--muted); }
+.version-section[open] > summary .version-chevron { transform: rotate(180deg); }
+.make-it-mine { margin-top: 24px; }
+.adapt-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.adapt-controls input { flex: 1; min-width: 180px; font-size: 13px; padding: 12px 14px; background: #f6f7fa; border: 0; border-radius: 12px; }
+.make-mine-button { font-size: 13px; padding: 12px 18px; border-radius: 12px; }
+@media (prefers-reduced-motion: reduce) { .version-chevron { transition: none; } }

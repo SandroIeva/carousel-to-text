@@ -20,11 +20,19 @@ export async function GET(
     if (!data) throw new HttpError("Not found.", 404);
     if (!terminal(data.status))
       throw new HttpError("Extraction is still running.", 409);
-    const file = exportJob(data as Job, format);
+    const mine = new URL(req.url).searchParams.get("version") === "mine";
+    let exported = data as Job;
+    if (mine) {
+      const { data: version, error: versionError } = await db.from("ctt_rewrites").select("slides").eq("job_id", id).maybeSingle();
+      if (versionError) throw versionError;
+      if (!version?.slides?.length) throw new HttpError("No adapted version is available yet.", 404);
+      exported = { ...exported, caption: null, owner: null, slides: version.slides.map((s: {position:number;text:string}) => ({...s, imageUrl:null, kind:"text" as const, status:"completed" as const})) };
+    }
+    const file = exportJob(exported, format);
     return new Response(file.body, {
       headers: {
         "Content-Type": file.type + "; charset=utf-8",
-        "Content-Disposition": `attachment; filename="carousel-${id}.${file.extension}"`,
+        "Content-Disposition": `attachment; filename="carousel-${id}${mine ? "-my-version" : ""}.${file.extension}"`,
         "Cache-Control": "private, no-store",
       },
     });
