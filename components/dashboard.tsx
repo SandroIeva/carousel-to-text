@@ -7,6 +7,7 @@ import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
 import { hasSavedContent, showExtraction } from "@/lib/history";
 import MakeItMine from "./make-it-mine";
+import SendToI7OS from "./send-to-i7os";
 const labels: Record<Job["status"], string> = {
   queued: "Queued",
   scraping: "Loading slides",
@@ -605,6 +606,7 @@ function SavedExtraction({
             >
               Delete
             </button>
+            <SendToI7OS jobId={job.id} version="original" />
           </div>
         )}
         {job.caption && !job.slides.some((s) => s.kind === "text") && (

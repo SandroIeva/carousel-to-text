@@ -134,3 +134,10 @@ Migration applied to jpgkkblchzzckoghrsku: per-account and per-IP daily counters
 - Your version shows a separate copyable title. Copy all and Markdown/TXT/JSON exports include it. Existing saved versions remain compatible and gain a title when regenerated.
 - Additive title column migration applied and verified. Typecheck and all 34 tests passed, including provider title validation and exports.
 
+# Send to i7OS — 2026-10-12
+
+- Original and adapted versions can be sent as documents through a server-side proxy using the verified Slide Scrape session. Source text/title/URL are loaded through owner RLS, never accepted from the browser. No new tokens, tables or migration.
+- Workspace picker includes disabled read-only workspaces. Empty lists offer an i7OS sign-up link. Documents default to restricted visibility; explicit checkbox enables workspace sharing. Successful replies show Open in i7OS with same-origin/document-ID validation.
+- Imports are never automatically retried; interrupted confirmations advise checking i7OS first. Regenerating a version resets its prior import result so the new content can be sent.
+- Live endpoint returns 401/no-store without credentials. Provider tests cover disabled/empty workspaces, private payloads, authorization headers, controlled errors, link rejection and no duplicate write retry. Full signed-in workspace/document test remains pending.
+

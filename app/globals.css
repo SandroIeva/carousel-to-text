@@ -700,3 +700,9 @@ summary {
 .tone-label { color: var(--muted); font-size: 13px; }
 .make-mine-button { font-size: 13px; padding: 12px 18px; border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) { .version-chevron svg { transition: none; } }
+.i7-import-panel { display: flex; flex-direction: column; gap: 12px; padding: 18px; margin-top: 12px; background: #f6f7fa; border-radius: 14px; max-width: 420px; font-size: 13px; }
+.i7-import-panel select { font: inherit; padding: 12px 36px 12px 12px; border: 0; border-radius: 10px; background: white; color: var(--ink); }
+.i7-share { display: flex; align-items: center; gap: 8px; }
+.i7-share input { padding: 0; width: auto; }
+.i7-import-success { display: flex; flex-direction: column; gap: 8px; }
+.i7-import-panel small { color: var(--muted); }

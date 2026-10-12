@@ -107,3 +107,7 @@ Slide Scrape verifies its own signed-in user, then sends the session access toke
 Only `{paid:true,plan:"starter"|"pro"|"agency"}` enables higher limits: Basic 10, Pro 25, Max 50 extractions and adaptations per Berlin day. Free remains 3/day and 30 extractions/month; paid monthly ceilings are daily allowance times 31. The existing quota-exempt owner flag is preserved. Shared IP usage remains aggregated and is evaluated against the requesting account's tier.
 
 Checks run on dashboard entry, extraction and adaptation requests, with a 60-second per-account cache. A changed email invalidates the cache; unconfirmed/anonymous users, unsupported replies, failures and cancellations revert to Free. Database grants remain owner-read-only and tier expiry is enforced even if app refresh stops. Stored tier validity is 120 seconds. No i7OS service key, Stripe key or extra credentials are required. `I7OS_APP_URL` is an optional server-only override; defaults to `https://app.i7os.com`.
+## i7OS document import
+
+Original and adapted text can be sent through `POST /api/jobs/{id}/i7os`. The server reads the selected saved version under owner RLS and calls the existing i7OS `slidescrape-import` endpoint with the verified session. The workspace picker retains disabled read-only entries; empty lists offer an i7OS account link. Default visibility is restricted; team sharing requires an explicit checkbox. Import writes have no automatic retry to avoid duplicate documents. No additional credentials or database migration are needed.
+

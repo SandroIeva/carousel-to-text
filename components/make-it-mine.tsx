@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import SendToI7OS from "./send-to-i7os";
 const tones = [
   { label: "Natural", value: "" },
   {
@@ -21,6 +22,7 @@ type Version = {
   status: "generating" | "ready" | "failed";
   angle: string;
   title?: string | null;
+  updated_at?: string;
   slides: { position: number; text: string }[];
   error: string | null;
   lease_until?: string;
@@ -210,6 +212,12 @@ export default function MakeItMine({
               >
                 {copied === "all" ? "Copied" : "Copy all text"}
               </button>
+              <SendToI7OS
+                key={version.updated_at}
+                jobId={jobId}
+                version="mine"
+                disabled={busy}
+              />
               {["md", "txt", "json"].map((f) => (
                 <a
                   className="text-button"
