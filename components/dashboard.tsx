@@ -434,7 +434,7 @@ function SavedExtraction({
     details.open = true;
     setOpen(true);
     const animation = content.animate(
-      [{ height: `${from}px`, opacity, paddingBottom }, { height: next ? `${content.scrollHeight}px` : "0px", opacity: next ? 1 : 0, paddingBottom: next ? "24px" : "0px" }],
+      [{ height: `${from}px`, opacity, paddingBottom }, { height: next ? `${content.scrollHeight}px` : "0px", opacity: next ? 1 : 0, paddingBottom: "0px" }],
       { duration: 400, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
     );
     animationRef.current = animation;
