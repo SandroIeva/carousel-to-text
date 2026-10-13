@@ -76,6 +76,14 @@ export async function POST(req: Request) {
       p_ip_hash: ipHash,
     });
     if (error) {
+      if (error.message.includes("free_trial_exhausted"))
+        return Response.json(
+          {
+            error: "Your five free scrapes have been used.",
+            code: "free_trial_exhausted",
+          },
+          { status: 429 },
+        );
       if (error.message.includes("daily_user_quota"))
         throw new HttpError(
           `Your daily limit of ${membership.dailyLimit} extractions has been reached. Try again after midnight (Europe/Berlin).`,

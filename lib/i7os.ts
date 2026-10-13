@@ -55,7 +55,7 @@ export async function syncI7Plan(db: SupabaseClient, user: User) {
   )
     return {
       plan: current.i7_plan as I7Plan,
-      dailyLimit: current.daily_limit,
+      dailyLimit: current.i7_plan === "free" ? 5 : current.daily_limit,
       rewriteLimit: current.rewrite_limit,
     };
   let plan: I7Plan = "free";
@@ -86,5 +86,10 @@ export async function syncI7Plan(db: SupabaseClient, user: User) {
     { onConflict: "user_id" },
   );
   if (savedError) throw savedError;
-  return { plan, dailyLimit: limit, rewriteLimit: limit, available };
+  return {
+    plan,
+    dailyLimit: plan === "free" ? 5 : limit,
+    rewriteLimit: limit,
+    available,
+  };
 }

@@ -1,6 +1,12 @@
 "use client";
 import { useEffect, useRef } from "react";
-export default function UpgradePreview({ onClose }: { onClose: () => void }) {
+export default function UpgradePreview({
+  onClose,
+  adminPreview = false,
+}: {
+  onClose: () => void;
+  adminPreview?: boolean;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     dialog.current?.showModal();
@@ -74,9 +80,11 @@ export default function UpgradePreview({ onClose }: { onClose: () => void }) {
             />
           </svg>
         </a>
-        <small className="upgrade-preview-note">
-          Admin preview · Your account stays unlimited.
-        </small>
+        {adminPreview && (
+          <small className="upgrade-preview-note">
+            Admin preview · Your account stays unlimited.
+          </small>
+        )}
       </div>
     </dialog>
   );

@@ -27,7 +27,7 @@ export default async function Page() {
       .limit(100),
     db
       .from("ctt_plans")
-      .select("monthly_limit,quota_exempt")
+      .select("monthly_limit,quota_exempt,free_scrapes_used")
       .eq("user_id", user.id)
       .maybeSingle(),
     db
@@ -55,7 +55,8 @@ export default async function Page() {
       }
       used={usage?.used || 0}
       dailyUsed={daily?.used || 0}
-      dailyLimit={membership.dailyLimit}
+      freeScrapesUsed={plan?.free_scrapes_used || 0}
+      dailyLimit={membership.plan === "free" ? 5 : membership.dailyLimit}
       i7Plan={membership.plan}
       rewriteLimit={membership.rewriteLimit}
       limit={plan?.monthly_limit ?? 30}

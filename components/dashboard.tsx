@@ -32,6 +32,7 @@ export default function Dashboard({
   dailyLimit = DAILY_LIMIT,
   i7Plan = "free",
   rewriteLimit = 3,
+  freeScrapesUsed = 0,
 }: {
   initial: Job[];
   email: string;
@@ -46,7 +47,10 @@ export default function Dashboard({
   dailyLimit?: number;
   i7Plan?: string;
   rewriteLimit?: number;
+  freeScrapesUsed?: number;
 }) {
+  const [trialUsed,setTrialUsed] = useState(freeScrapesUsed);
+  const trialEnded = !guest && !quotaExempt && i7Plan === "free" && trialUsed >= 5;
   const [upgradePreview, setUpgradePreview] = useState(false);
   const canPreviewUpgrade = quotaExempt && email.trim().toLowerCase() === "sandro.ieva@googlemail.com";
   const [jobs, setJobs] = useState<Job[]>(initial),
@@ -124,6 +128,7 @@ export default function Dashboard({
       window.location.assign("/dashboard");
       return;
     }
+    if(trialEnded) {setUpgradePreview(true);return;}
     setBusy(true);
     setError("");
     requestId.current ||= crypto.randomUUID();
@@ -134,7 +139,7 @@ export default function Dashboard({
         body: JSON.stringify({ url, requestId: requestId.current }),
       });
       const b = await r.json();
-      if (!r.ok) throw new Error(b.error);
+      if (!r.ok) {if(b.code === "free_trial_exhausted") {setTrialUsed(5);setUpgradePreview(true);return;} throw new Error(b.error);}
       const history = await fetch("/api/jobs", { cache: "no-store" });
       if (!history.ok)
         throw new Error("Extraction created. Please reload your history.");
@@ -144,6 +149,7 @@ export default function Dashboard({
       setHistoryPage(1);
       setCount((c) => c + 1);
       setDailyCount((c) => c + 1);
+      if(i7Plan === "free") setTrialUsed(c=>c+1);
       setUrl("");
       requestId.current = null;
     } catch (e) {
@@ -162,7 +168,7 @@ export default function Dashboard({
   }
   return (
     <main className="simple-app">
-      {upgradePreview && <UpgradePreview onClose={() => setUpgradePreview(false)} />}
+      {upgradePreview && <UpgradePreview adminPreview={canPreviewUpgrade} onClose={() => setUpgradePreview(false)} />}
       <header className="topbar">
         <Link href="https://www.slide-scrape.xyz" className="brand" onClick={canPreviewUpgrade ? (event) => { event.preventDefault(); setUpgradePreview(true); } : undefined}>
           Slide Scrape
@@ -206,7 +212,7 @@ export default function Dashboard({
               disabled={
                 busy ||
                 (!guest &&
-                  (!ready || (!quotaExempt && (count >= limit || dailyCount >= dailyLimit))))
+                  (!ready || (!trialEnded && !quotaExempt && (count >= limit || dailyCount >= dailyLimit))))
               }
             >
               {busy ? (
@@ -239,7 +245,7 @@ export default function Dashboard({
         {!guest && !ready && (
           <p className="notice">Extraction is not set up yet.</p>
         )}
-        {!guest && !quotaExempt && !error && dailyCount >= dailyLimit && (
+        {!guest && !quotaExempt && !trialEnded && !error && dailyCount >= dailyLimit && (
           <p className="notice">
             Your daily limit of {dailyLimit} extractions has been reached. Try again after
             midnight (Europe/Berlin).
