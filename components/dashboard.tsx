@@ -6,6 +6,7 @@ import { terminal, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
 import { hasSavedContent, showExtraction } from "@/lib/history";
+import UpgradePreview from "./upgrade-preview";
 import MakeItMine from "./make-it-mine";
 import I7Benefits from "./i7-benefits";
 import SendToI7OS from "./send-to-i7os";
@@ -46,6 +47,8 @@ export default function Dashboard({
   i7Plan?: string;
   rewriteLimit?: number;
 }) {
+  const [upgradePreview, setUpgradePreview] = useState(false);
+  const canPreviewUpgrade = quotaExempt && email.trim().toLowerCase() === "sandro.ieva@googlemail.com";
   const [jobs, setJobs] = useState<Job[]>(initial),
     [url, setUrl] = useState(""),
     [error, setError] = useState(initialError),
@@ -159,8 +162,9 @@ export default function Dashboard({
   }
   return (
     <main className="simple-app">
+      {upgradePreview && <UpgradePreview onClose={() => setUpgradePreview(false)} />}
       <header className="topbar">
-        <Link href="https://www.slide-scrape.xyz" className="brand">
+        <Link href="https://www.slide-scrape.xyz" className="brand" onClick={canPreviewUpgrade ? (event) => { event.preventDefault(); setUpgradePreview(true); } : undefined}>
           Slide Scrape
         </Link>
         {guest ? (

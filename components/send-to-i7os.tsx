@@ -135,7 +135,7 @@ export default function SendToI7OS({
                   <path
                     d="m6 6 12 12M18 6 6 18"
                     stroke="currentColor"
-                    strokeWidth="1.7"
+                    strokeWidth="2.2"
                     strokeLinecap="round"
                   />
                 </svg>
@@ -212,7 +212,7 @@ export default function SendToI7OS({
                     disabled={busy || !selected}
                     onClick={send}
                   >
-                    Send document
+                    Send to Document
                   </button>
                 </>
               )
