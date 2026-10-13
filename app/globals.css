@@ -739,7 +739,7 @@ summary {
 
 .upgrade-panel { gap:18px; padding:32px; }
 .upgrade-panel > .i7-dialog-close { align-self:flex-end; }
-.upgrade-eyebrow { font-size:10px; letter-spacing:1.6px; color:#3561a4; font-weight:600; }
+.upgrade-eyebrow { font-size:12px; letter-spacing:1.6px; color:var(--muted); font-weight:600; }
 .upgrade-panel h2 { margin:0; font-size:30px; line-height:1.2; letter-spacing:-1px; }
 .upgrade-panel p { margin:0; font-size:15px; line-height:1.7; color:var(--muted); }
 .upgrade-panel ul { margin:0; padding-left:18px; font-size:14px; line-height:2; }

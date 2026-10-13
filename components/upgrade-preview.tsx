@@ -42,15 +42,16 @@ export default function UpgradePreview({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
         <span className="upgrade-eyebrow">SLIDE SCRAPE + i7OS</span>
-        <h2 id="upgrade-title">Keep creating with i7OS.</h2>
+        <h2 id="upgrade-title">Keep creating with i7OS</h2>
         <p>
-          You’ve used your 5 free scrapes. Create an i7OS account and choose a
-          plan to unlock more content.
+          You’ve used your 5 free scrapes. Discover i7OS — your Brand OS to
+          build a consistent brand and scale it with confidence.
         </p>
         <ul>
-          <li>More scrapes and adaptations</li>
-          <li>Turn slides into your own content</li>
-          <li>Send documents straight to your workspace</li>
+          <li>Create content that sounds like your brand</li>
+          <li>Manage your content in one workspace</li>
+          <li>Share and publish directly to your channels</li>
+          <li>Build a consistent brand with your team</li>
         </ul>
         <a className="upgrade-cta" href="https://i7os.com/pricing.html">
           Explore i7OS plans{" "}
