@@ -53,6 +53,9 @@ export default function UpgradePreview({ onClose }: { onClose: () => void }) {
           <li>Share and publish directly to your channels</li>
           <li>Build a consistent brand with your team</li>
         </ul>
+        <a className="upgrade-cta upgrade-learn" href="https://i7os.com">
+          Learn more about i7OS
+        </a>
         <a className="upgrade-cta" href="https://i7os.com/pricing.html">
           Explore i7OS plans{" "}
           <svg

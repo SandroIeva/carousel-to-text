@@ -746,3 +746,6 @@ summary {
 .upgrade-cta { display:flex; align-items:center; justify-content:center; gap:10px; padding:15px 20px; border-radius:12px; background:#2563eb; color:white; font-size:14px; font-weight:500; margin-top:4px; }
 .upgrade-cta:hover { background:#1d4ed8; }
 .upgrade-preview-note { text-align:center; font-size:11px; }
+
+.upgrade-learn { background:white; color:var(--ink); border:1px solid var(--border); }
+.upgrade-learn:hover { background:#f6f7fa; }
