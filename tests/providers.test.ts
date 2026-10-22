@@ -102,3 +102,50 @@ test("provider requests: secrets in headers, source matching, image bounds and i
     delete process.env.GEMINI_API_KEY;
   }
 });
+
+test("Gemini retries temporary 503 responses but never retries credential errors", async () => {
+  const original = globalThis.fetch;
+  process.env.GEMINI_API_KEY = "test-gemini-secret";
+  let requests = 0;
+  try {
+    globalThis.fetch = async (input) => {
+      if (String(input).includes("fbcdn"))
+        return new Response(new Uint8Array([1]), {
+          headers: { "content-type": "image/jpeg" },
+        });
+      requests++;
+      return requests === 1
+        ? new Response(null, { status: 503 })
+        : Response.json({ candidates: [{ finishReason: "STOP", content: { parts: [{ text: "Recovered" }] } }] });
+    };
+    assert.equal(await transcribe("https://s.fbcdn.net/a"), "Recovered");
+    assert.equal(requests, 2);
+
+    requests = 0;
+    globalThis.fetch = async (input) => {
+      if (String(input).includes("fbcdn"))
+        return new Response(new Uint8Array([1]), {
+          headers: { "content-type": "image/jpeg" },
+        });
+      requests++;
+      return new Response(null, { status: 403 });
+    };
+    await assert.rejects(() => transcribe("https://s.fbcdn.net/a"), /Gemini HTTP 403/);
+    assert.equal(requests, 1);
+
+    requests = 0;
+    globalThis.fetch = async (input) => {
+      if (String(input).includes("fbcdn"))
+        return new Response(new Uint8Array([1]), {
+          headers: { "content-type": "image/jpeg" },
+        });
+      requests++;
+      return new Response(null, { status: 503 });
+    };
+    await assert.rejects(() => transcribe("https://s.fbcdn.net/a"), /Gemini HTTP 503/);
+    assert.equal(requests, 3);
+  } finally {
+    globalThis.fetch = original;
+    delete process.env.GEMINI_API_KEY;
+  }
+});

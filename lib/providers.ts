@@ -4,20 +4,29 @@ import { ProviderFailure, providerHttpFailure } from "./provider-error";
 const APIFY = "https://api.apify.com/v2";
 async function json(url: string, init: RequestInit = {}, timeout = 25000) {
   const provider = url.startsWith(APIFY) ? "Apify" : "Gemini";
-  let r: Response;
-  try {
-    r = await fetch(url, {
-      ...init,
-      cache: "no-store",
-      signal: AbortSignal.timeout(timeout),
-    });
-  } catch {
-    throw new ProviderFailure(
-      `${provider}: Network request failed or timed out.`,
-    );
+  // Gemini's 5xx responses and network timeouts are transient. Keep the whole
+  // transcription within the 90-second job-step limit, including image download.
+  const timeouts = provider === "Gemini" ? [Math.min(timeout, 35000), 15000, 8000] : [timeout];
+  for (let attempt = 0; attempt < timeouts.length; attempt++) {
+    let r: Response;
+    try {
+      r = await fetch(url, {
+        ...init,
+        cache: "no-store",
+        signal: AbortSignal.timeout(timeouts[attempt]),
+      });
+    } catch {
+      if (attempt === timeouts.length - 1)
+        throw new ProviderFailure(`${provider}: Network request failed or timed out.`);
+      await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt + Math.random() * 250));
+      continue;
+    }
+    if (r.ok) return r.json();
+    if (provider !== "Gemini" || r.status < 500 || r.status >= 600 || attempt === timeouts.length - 1)
+      throw providerHttpFailure(provider, r.status);
+    await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt + Math.random() * 250));
   }
-  if (!r.ok) throw providerHttpFailure(provider, r.status);
-  return r.json();
+  throw new ProviderFailure("Gemini: Request failed.");
 }
 export async function startApify(url: string) {
   const platform = platformFor(url);

@@ -5,6 +5,7 @@ export type Slide = {
   status: "pending" | "completed" | "failed" | "unsupported";
   text: string;
   error?: string;
+  retryCount?: number;
 };
 export type Job = {
   id: string;

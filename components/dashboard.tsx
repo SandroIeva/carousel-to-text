@@ -6,6 +6,7 @@ import { terminal, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
 import { hasSavedContent, showExtraction } from "@/lib/history";
+import { isRetryableGeminiFailure } from "@/lib/retry-failed-slides";
 import UpgradePreview from "./upgrade-preview";
 import MakeItMine from "./make-it-mine";
 import I7Benefits from "./i7-benefits";
@@ -166,6 +167,17 @@ export default function Dashboard({
       if (newJobId === id) setNewJobId(null);
     } else setError("Could not delete. Please try again.");
   }
+  async function retry(id: string) {
+    setError("");
+    const response = await fetch(`/api/jobs/${id}/retry`, { method: "POST" });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Could not retry this extraction.");
+    const history = await fetch("/api/jobs", { cache: "no-store" });
+    if (!history.ok) throw new Error("Retry started. Please reload your history.");
+    setJobs(await history.json());
+    setNewJobId(id);
+    reported.current.delete(id);
+  }
   return (
     <main className="simple-app">
       {upgradePreview && <UpgradePreview adminPreview={canPreviewUpgrade} onClose={() => setUpgradePreview(false)} />}
@@ -263,6 +275,7 @@ export default function Dashboard({
               job={job}
               initiallyOpen={job.id === newJobId || !terminal(job.status)}
               onDelete={remove}
+              onRetry={retry}
               onError={setError}
             />
           ))}
@@ -411,14 +424,17 @@ function SavedExtraction({
   job,
   initiallyOpen,
   onDelete,
+  onRetry,
   onError,
 }: {
   job: Job;
   initiallyOpen: boolean;
   onDelete: (id: string) => Promise<void>;
+  onRetry: (id: string) => Promise<void>;
   onError: (message: string) => void;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
   const [open, setOpen] = useState(initiallyOpen);
   const [originalOpen, setOriginalOpen] = useState(!terminal(job.status));
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -462,6 +478,16 @@ function SavedExtraction({
       setTimeout(() => setCopied(null), 2000);
     } catch {
       onError("Could not copy. Please select the text directly.");
+    }
+  }
+  async function retrySlides() {
+    setRetrying(true);
+    try {
+      await onRetry(job.id);
+    } catch (error) {
+      onError((error as Error).message);
+    } finally {
+      setRetrying(false);
     }
   }
   return (
@@ -550,6 +576,11 @@ function SavedExtraction({
           </div>
         )}
         {job.error && <p className="notice">{job.error}</p>}
+        {terminal(job.status) && job.slides.some(isRetryableGeminiFailure) && (
+          <button className="secondary" disabled={retrying} onClick={retrySlides}>
+            {retrying ? "Retrying…" : "Retry failed slides"}
+          </button>
+        )}
         {terminal(job.status) && job.slides.some(s => s.status === "completed" && s.text.trim()) && (
           <MakeItMine jobId={job.id} onReady={() => setOriginalOpen(false)} />
         )}

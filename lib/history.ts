@@ -1,4 +1,5 @@
 import { terminal, type Job } from "./types";
+import { isRetryableGeminiFailure } from "./retry-failed-slides";
 
 export function hasSavedContent(job: Job) {
   return terminal(job.status) && job.slides.some(
@@ -7,5 +8,6 @@ export function hasSavedContent(job: Job) {
 }
 
 export function showExtraction(job: Job) {
-  return !terminal(job.status) || hasSavedContent(job);
+  return !terminal(job.status) || hasSavedContent(job) ||
+    job.slides.some(isRetryableGeminiFailure);
 }
