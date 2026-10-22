@@ -140,10 +140,12 @@ test("Gemini retries temporary 503 responses but never retries credential errors
           headers: { "content-type": "image/jpeg" },
         });
       requests++;
+      if (String(input).includes("gemini-3.5-flash-lite"))
+        return Response.json({ candidates: [{ finishReason: "STOP", content: { parts: [{ text: "Fallback recovered" }] } }] });
       return new Response(null, { status: 503 });
     };
-    await assert.rejects(() => transcribe("https://s.fbcdn.net/a"), /Gemini HTTP 503/);
-    assert.equal(requests, 3);
+    assert.equal(await transcribe("https://s.fbcdn.net/a"), "Fallback recovered");
+    assert.equal(requests, 4);
   } finally {
     globalThis.fetch = original;
     delete process.env.GEMINI_API_KEY;
