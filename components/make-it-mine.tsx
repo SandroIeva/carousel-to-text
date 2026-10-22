@@ -99,7 +99,7 @@ export default function MakeItMine({
             ? "Creating your version…"
             : versions.length
               ? "Create another version"
-              : "Make it mine"}
+              : "Adapt"}
         </button>
       </div>
       {busy && (
