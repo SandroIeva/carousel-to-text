@@ -19,6 +19,7 @@ export default async function Page() {
     { data: plan },
     { data: daily },
     { data: usage },
+    { data: folders, error: foldersError },
   ] = await Promise.all([
     db
       .from("ctt_jobs")
@@ -42,10 +43,15 @@ export default async function Page() {
       .eq("user_id", user.id)
       .eq("month", new Date().toISOString().slice(0, 7) + "-01")
       .maybeSingle(),
+    db
+      .from("ctt_folders")
+      .select("id,user_id,name,created_at")
+      .order("created_at", { ascending: true }),
   ]);
   return (
     <Dashboard
       initial={jobs || []}
+      initialFolders={folders || []}
       email={user.email || ""}
       avatarUrl={
         typeof user.user_metadata?.avatar_url === "string" &&
@@ -63,7 +69,7 @@ export default async function Page() {
       quotaExempt={plan?.quota_exempt === true}
       ready={integrationsReady()}
       initialError={
-        error ? "Could not load your history. Please check database setup." : ""
+        error || foldersError ? "Could not load your history. Please check database setup." : ""
       }
     />
   );

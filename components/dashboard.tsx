@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
-import { terminal, type Job } from "@/lib/types";
+import { terminal, type Folder, type Job } from "@/lib/types";
 import { platformFor, platformLabel } from "@/lib/core";
 import { DAILY_LIMIT } from "@/lib/daily-limit";
 import { hasSavedContent, showExtraction } from "@/lib/history";
@@ -21,6 +21,7 @@ const labels: Record<Job["status"], string> = {
 };
 export default function Dashboard({
   initial,
+  initialFolders = [],
   email,
   used,
   limit,
@@ -36,6 +37,7 @@ export default function Dashboard({
   freeScrapesUsed = 0,
 }: {
   initial: Job[];
+  initialFolders?: Folder[];
   email: string;
   used: number;
   limit: number;
@@ -63,11 +65,21 @@ export default function Dashboard({
     [dailyCount, setDailyCount] = useState(dailyUsed);
   const requestId = useRef<string | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
+  const [folders, setFolders] = useState<Folder[]>(initialFolders);
+  const [selectedFolder, setSelectedFolder] = useState("all");
+  const [folderForm, setFolderForm] = useState<"create" | "rename" | null>(null);
+  const [folderName, setFolderName] = useState("");
+  const [folderError, setFolderError] = useState("");
+  const [folderBusy, setFolderBusy] = useState(false);
   const reported = useRef(new Set(initial.filter((job) => terminal(job.status)).map((job) => job.id)));
   const visibleJobs = jobs.filter(showExtraction);
-  const pageCount = Math.max(1, Math.ceil(visibleJobs.length / 10));
+  const filteredJobs = visibleJobs.filter((job) =>
+    selectedFolder === "all" ||
+    (selectedFolder === "unfiled" ? !job.folder_id : job.folder_id === selectedFolder),
+  );
+  const pageCount = Math.max(1, Math.ceil(filteredJobs.length / 10));
   const currentPage = Math.min(historyPage, pageCount);
-  const pageJobs = visibleJobs.slice((currentPage - 1) * 10, currentPage * 10);
+  const pageJobs = filteredJobs.slice((currentPage - 1) * 10, currentPage * 10);
   useEffect(() => {
     setHistoryPage((page) => Math.min(page, pageCount));
   }, [pageCount]);
@@ -147,6 +159,7 @@ export default function Dashboard({
       const all: Job[] = await history.json();
       setJobs(all);
       setNewJobId(b.id);
+      setSelectedFolder("all");
       setHistoryPage(1);
       setCount((c) => c + 1);
       setDailyCount((c) => c + 1);
@@ -177,6 +190,70 @@ export default function Dashboard({
     setJobs(await history.json());
     setNewJobId(id);
     reported.current.delete(id);
+  }
+  function chooseFolder(id: string) {
+    setSelectedFolder(id);
+    setHistoryPage(1);
+    setFolderForm(null);
+    setFolderError("");
+  }
+  async function saveFolder(event: React.FormEvent) {
+    event.preventDefault();
+    const name = folderName.trim();
+    if (!name) return;
+    setFolderBusy(true);
+    setFolderError("");
+    try {
+      const creating = folderForm === "create";
+      const response = await fetch(creating ? "/api/folders" : `/api/folders/${selectedFolder}`, {
+        method: creating ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not save the folder.");
+      if (creating) {
+        setFolders((current) => [...current, result]);
+        chooseFolder(result.id);
+      } else {
+        setFolders((current) => current.map((folder) => folder.id === result.id ? result : folder));
+        setFolderForm(null);
+      }
+      setFolderName("");
+    } catch (error) {
+      setFolderError((error as Error).message);
+    } finally {
+      setFolderBusy(false);
+    }
+  }
+  async function deleteFolder() {
+    if (!confirm("Delete this folder? Its extractions will stay saved in Unfiled.")) return;
+    setFolderBusy(true);
+    setFolderError("");
+    try {
+      const response = await fetch(`/api/folders/${selectedFolder}`, { method: "DELETE" });
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || "Could not delete the folder.");
+      }
+      setFolders((current) => current.filter((folder) => folder.id !== selectedFolder));
+      setJobs((current) => current.map((job) => job.folder_id === selectedFolder ? { ...job, folder_id: null } : job));
+      chooseFolder("unfiled");
+    } catch (error) {
+      setFolderError((error as Error).message);
+    } finally {
+      setFolderBusy(false);
+    }
+  }
+  async function moveJob(jobId: string, folderId: string | null) {
+    const response = await fetch(`/api/jobs/${jobId}/folder`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folderId }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Could not move the extraction.");
+    setJobs((current) => current.map((job) => job.id === jobId ? { ...job, folder_id: result.folder_id } : job));
   }
   return (
     <main className="simple-app">
@@ -267,8 +344,44 @@ export default function Dashboard({
           <p className="notice">You have reached your monthly limit.</p>
         )}
       </section>
-      {!guest && visibleJobs.length > 0 && (
+      {!guest && (
+        <div className="library-layout">
+          <aside className="folder-sidebar" aria-label="Folders">
+            <div className="folder-heading">
+              <span>Folders</span>
+              <button type="button" className="folder-create" onClick={() => { setFolderForm("create"); setFolderName(""); setFolderError(""); }}>
+                <span aria-hidden="true">+</span> Create
+              </button>
+            </div>
+            <nav className="folder-nav" aria-label="Extraction folders">
+              <button type="button" className={selectedFolder === "all" ? "active" : ""} aria-current={selectedFolder === "all" ? "page" : undefined} onClick={() => chooseFolder("all")}>All</button>
+              <button type="button" className={selectedFolder === "unfiled" ? "active" : ""} aria-current={selectedFolder === "unfiled" ? "page" : undefined} onClick={() => chooseFolder("unfiled")}>Unfiled</button>
+              {folders.map((folder) => (
+                <button type="button" key={folder.id} className={selectedFolder === folder.id ? "active" : ""} aria-current={selectedFolder === folder.id ? "page" : undefined} onClick={() => chooseFolder(folder.id)} title={folder.name}>{folder.name}</button>
+              ))}
+            </nav>
+            {folderForm && (
+              <form className="folder-form" onSubmit={saveFolder}>
+                <label className="sr-only" htmlFor="folder-name">Folder name</label>
+                <input id="folder-name" autoFocus maxLength={60} placeholder="Folder name" value={folderName} onChange={(event) => setFolderName(event.target.value)} />
+                <div className="folder-form-actions">
+                  <button type="submit" disabled={folderBusy || !folderName.trim()}>{folderForm === "create" ? "Create" : "Save"}</button>
+                  <button type="button" onClick={() => { setFolderForm(null); setFolderError(""); }}>Cancel</button>
+                </div>
+              </form>
+            )}
+            {selectedFolder !== "all" && selectedFolder !== "unfiled" && !folderForm && (
+              <div className="folder-manage">
+                <button type="button" onClick={() => { setFolderName(folders.find((folder) => folder.id === selectedFolder)?.name || ""); setFolderForm("rename"); }}>Rename</button>
+                <button type="button" disabled={folderBusy} onClick={deleteFolder}>Delete</button>
+              </div>
+            )}
+            {folderError && <p className="folder-error" role="alert">{folderError}</p>}
+          </aside>
         <section className="extraction-list" aria-label="Saved extractions">
+          {filteredJobs.length === 0 && (
+            <p className="folder-empty">{selectedFolder === "all" ? "Your extractions will appear here." : "No extractions in this folder yet."}</p>
+          )}
           {pageJobs.map((job) => (
             <SavedExtraction
               key={job.id}
@@ -277,6 +390,8 @@ export default function Dashboard({
               onDelete={remove}
               onRetry={retry}
               onError={setError}
+              folders={folders}
+              onMove={moveJob}
             />
           ))}
           {pageCount > 1 && (
@@ -291,6 +406,7 @@ export default function Dashboard({
             </nav>
           )}
         </section>
+        </div>
       )}
     </main>
   );
@@ -426,15 +542,20 @@ function SavedExtraction({
   onDelete,
   onRetry,
   onError,
+  folders,
+  onMove,
 }: {
   job: Job;
   initiallyOpen: boolean;
   onDelete: (id: string) => Promise<void>;
   onRetry: (id: string) => Promise<void>;
   onError: (message: string) => void;
+  folders: Folder[];
+  onMove: (jobId: string, folderId: string | null) => Promise<void>;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
+  const [moving, setMoving] = useState(false);
   const [open, setOpen] = useState(initiallyOpen);
   const [originalOpen, setOriginalOpen] = useState(!terminal(job.status));
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -488,6 +609,16 @@ function SavedExtraction({
       onError((error as Error).message);
     } finally {
       setRetrying(false);
+    }
+  }
+  async function moveTo(folderId: string) {
+    setMoving(true);
+    try {
+      await onMove(job.id, folderId || null);
+    } catch (error) {
+      onError((error as Error).message);
+    } finally {
+      setMoving(false);
     }
   }
   return (
@@ -557,6 +688,7 @@ function SavedExtraction({
         </span>
       </summary>
       <div className="extraction-content" ref={contentRef}>
+        <div className="extraction-meta">
         <a
           href={job.url}
           target="_blank"
@@ -565,6 +697,14 @@ function SavedExtraction({
         >
           View original ↗
         </a>
+        <label className="folder-picker">
+          <span>Folder</span>
+          <select aria-label="Move extraction to folder" value={job.folder_id || ""} disabled={moving} onChange={(event) => moveTo(event.target.value)}>
+            <option value="">Unfiled</option>
+            {folders.map((folder) => <option value={folder.id} key={folder.id}>{folder.name}</option>)}
+          </select>
+        </label>
+        </div>
         {!terminal(job.status) && (
           <div className="extraction-loading" role="status">
             <span className="loader loader-reading" aria-hidden="true" />

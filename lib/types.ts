@@ -24,6 +24,13 @@ export type Job = {
   error: string | null;
   lease_token: string | null;
   attempts: number;
+  folder_id?: string | null;
+};
+export type Folder = {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
 };
 export const terminal = (status: Job["status"]) =>
   ["completed", "partial", "failed"].includes(status);
