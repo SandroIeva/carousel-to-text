@@ -349,8 +349,8 @@ export default function Dashboard({
           <aside className="folder-sidebar" aria-label="Folders">
             <div className="folder-heading">
               <span>Folders</span>
-              <button type="button" className="folder-create" onClick={() => { setFolderForm("create"); setFolderName(""); setFolderError(""); }}>
-                <span aria-hidden="true">+</span> Create
+              <button type="button" className="folder-create" aria-label="Create folder" title="Create folder" onClick={() => { setFolderForm("create"); setFolderName(""); setFolderError(""); }}>
+                <span aria-hidden="true">+</span>
               </button>
             </div>
             <nav className="folder-nav" aria-label="Extraction folders">
