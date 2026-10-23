@@ -75,8 +75,7 @@ export default function Dashboard({
   const reported = useRef(new Set(initial.filter((job) => terminal(job.status)).map((job) => job.id)));
   const visibleJobs = jobs.filter(showExtraction);
   const filteredJobs = visibleJobs.filter((job) =>
-    selectedFolder === "all" ||
-    (selectedFolder === "unfiled" ? !job.folder_id : job.folder_id === selectedFolder),
+    selectedFolder === "all" || job.folder_id === selectedFolder,
   );
   const pageCount = Math.max(1, Math.ceil(filteredJobs.length / 10));
   const currentPage = Math.min(historyPage, pageCount);
@@ -256,7 +255,7 @@ export default function Dashboard({
   }
   async function deleteFolder(id: string) {
     setMenuFolderId(null);
-    if (!confirm("Delete this folder? Its extractions will stay saved in Unfiled.")) return;
+    if (!confirm("Delete this folder? Its extractions will stay saved in All.")) return;
     setFolderBusy(true);
     setFolderError("");
     try {
@@ -267,7 +266,7 @@ export default function Dashboard({
       }
       setFolders((current) => current.filter((folder) => folder.id !== id));
       setJobs((current) => current.map((job) => job.folder_id === id ? { ...job, folder_id: null } : job));
-      if (selectedFolder === id) chooseFolder("unfiled");
+      if (selectedFolder === id) chooseFolder("all");
     } catch (error) {
       setFolderError((error as Error).message);
     } finally {
@@ -384,7 +383,6 @@ export default function Dashboard({
             </div>
             <nav className="folder-nav" aria-label="Extraction folders">
               <button type="button" className={selectedFolder === "all" ? "active" : ""} aria-current={selectedFolder === "all" ? "page" : undefined} onClick={() => chooseFolder("all")}>All</button>
-              <button type="button" className={selectedFolder === "unfiled" ? "active" : ""} aria-current={selectedFolder === "unfiled" ? "page" : undefined} onClick={() => chooseFolder("unfiled")}>Unfiled</button>
               {folders.map((folder) => (
                 <div key={folder.id} className={`folder-row${selectedFolder === folder.id ? " active" : ""}`} data-folder-options>
                   <button type="button" className="folder-select" aria-current={selectedFolder === folder.id ? "page" : undefined} onClick={() => chooseFolder(folder.id)} title={folder.name}>{folder.name}</button>
@@ -734,7 +732,7 @@ function SavedExtraction({
         <label className="folder-picker">
           <span>Folder</span>
           <select aria-label="Move extraction to folder" value={job.folder_id || ""} disabled={moving} onChange={(event) => moveTo(event.target.value)}>
-            <option value="">Unfiled</option>
+            <option value="">{job.folder_id ? "Remove from folder" : "No folder"}</option>
             {folders.map((folder) => <option value={folder.id} key={folder.id}>{folder.name}</option>)}
           </select>
         </label>
