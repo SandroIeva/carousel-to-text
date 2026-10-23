@@ -71,6 +71,7 @@ export default function Dashboard({
   const [folderName, setFolderName] = useState("");
   const [folderError, setFolderError] = useState("");
   const [folderBusy, setFolderBusy] = useState(false);
+  const [menuFolderId, setMenuFolderId] = useState<string | null>(null);
   const reported = useRef(new Set(initial.filter((job) => terminal(job.status)).map((job) => job.id)));
   const visibleJobs = jobs.filter(showExtraction);
   const filteredJobs = visibleJobs.filter((job) =>
@@ -83,6 +84,24 @@ export default function Dashboard({
   useEffect(() => {
     setHistoryPage((page) => Math.min(page, pageCount));
   }, [pageCount]);
+  useEffect(() => {
+    if (!menuFolderId) return;
+    function closeOnOutsideClick(event: PointerEvent) {
+      if (!(event.target as Element).closest("[data-folder-options]")) setMenuFolderId(null);
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        document.querySelector<HTMLButtonElement>('.folder-options-trigger[aria-expanded="true"]')?.focus();
+        setMenuFolderId(null);
+      }
+    }
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuFolderId]);
   useEffect(() => {
     if (!guest) {
       const saved = sessionStorage.getItem("carousel-url");
@@ -196,6 +215,15 @@ export default function Dashboard({
     setHistoryPage(1);
     setFolderForm(null);
     setFolderError("");
+    setMenuFolderId(null);
+  }
+  function renameFolder(folder: Folder) {
+    setSelectedFolder(folder.id);
+    setHistoryPage(1);
+    setFolderName(folder.name);
+    setFolderForm("rename");
+    setFolderError("");
+    setMenuFolderId(null);
   }
   async function saveFolder(event: React.FormEvent) {
     event.preventDefault();
@@ -226,19 +254,20 @@ export default function Dashboard({
       setFolderBusy(false);
     }
   }
-  async function deleteFolder() {
+  async function deleteFolder(id: string) {
+    setMenuFolderId(null);
     if (!confirm("Delete this folder? Its extractions will stay saved in Unfiled.")) return;
     setFolderBusy(true);
     setFolderError("");
     try {
-      const response = await fetch(`/api/folders/${selectedFolder}`, { method: "DELETE" });
+      const response = await fetch(`/api/folders/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const result = await response.json();
         throw new Error(result.error || "Could not delete the folder.");
       }
-      setFolders((current) => current.filter((folder) => folder.id !== selectedFolder));
-      setJobs((current) => current.map((job) => job.folder_id === selectedFolder ? { ...job, folder_id: null } : job));
-      chooseFolder("unfiled");
+      setFolders((current) => current.filter((folder) => folder.id !== id));
+      setJobs((current) => current.map((job) => job.folder_id === id ? { ...job, folder_id: null } : job));
+      if (selectedFolder === id) chooseFolder("unfiled");
     } catch (error) {
       setFolderError((error as Error).message);
     } finally {
@@ -357,7 +386,18 @@ export default function Dashboard({
               <button type="button" className={selectedFolder === "all" ? "active" : ""} aria-current={selectedFolder === "all" ? "page" : undefined} onClick={() => chooseFolder("all")}>All</button>
               <button type="button" className={selectedFolder === "unfiled" ? "active" : ""} aria-current={selectedFolder === "unfiled" ? "page" : undefined} onClick={() => chooseFolder("unfiled")}>Unfiled</button>
               {folders.map((folder) => (
-                <button type="button" key={folder.id} className={selectedFolder === folder.id ? "active" : ""} aria-current={selectedFolder === folder.id ? "page" : undefined} onClick={() => chooseFolder(folder.id)} title={folder.name}>{folder.name}</button>
+                <div key={folder.id} className={`folder-row${selectedFolder === folder.id ? " active" : ""}`} data-folder-options>
+                  <button type="button" className="folder-select" aria-current={selectedFolder === folder.id ? "page" : undefined} onClick={() => chooseFolder(folder.id)} title={folder.name}>{folder.name}</button>
+                  <button type="button" className="folder-options-trigger" aria-label={`Options for ${folder.name}`} aria-controls={`folder-menu-${folder.id}`} aria-expanded={menuFolderId === folder.id} onClick={() => setMenuFolderId((current) => current === folder.id ? null : folder.id)}>
+                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><circle cx="4" cy="9" r="1.3" /><circle cx="9" cy="9" r="1.3" /><circle cx="14" cy="9" r="1.3" /></svg>
+                  </button>
+                  {menuFolderId === folder.id && (
+                    <div id={`folder-menu-${folder.id}`} className="folder-options-menu" role="group" aria-label={`Options for ${folder.name}`}>
+                      <button type="button" onClick={() => renameFolder(folder)}>Rename</button>
+                      <button type="button" disabled={folderBusy} onClick={() => deleteFolder(folder.id)}>Delete</button>
+                    </div>
+                  )}
+                </div>
               ))}
             </nav>
             {folderForm && (
@@ -369,12 +409,6 @@ export default function Dashboard({
                   <button type="button" onClick={() => { setFolderForm(null); setFolderError(""); }}>Cancel</button>
                 </div>
               </form>
-            )}
-            {selectedFolder !== "all" && selectedFolder !== "unfiled" && !folderForm && (
-              <div className="folder-manage">
-                <button type="button" onClick={() => { setFolderName(folders.find((folder) => folder.id === selectedFolder)?.name || ""); setFolderForm("rename"); }}>Rename</button>
-                <button type="button" disabled={folderBusy} onClick={deleteFolder}>Delete</button>
-              </div>
             )}
             {folderError && <p className="folder-error" role="alert">{folderError}</p>}
           </aside>

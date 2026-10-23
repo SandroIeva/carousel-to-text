@@ -591,7 +591,6 @@ summary {
   text-transform: uppercase;
 }
 .folder-create,
-.folder-manage button,
 .folder-form-actions button {
   padding: 4px 0;
   border: 0;
@@ -617,7 +616,8 @@ summary {
 }
 .folder-create span { font-size: 20px; line-height: 1; font-weight: 300; }
 .folder-nav { display: flex; flex-direction: column; gap: 2px; margin-top: 20px; }
-.folder-nav button {
+.folder-nav > button,
+.folder-select {
   display: block;
   width: 100%;
   overflow: hidden;
@@ -631,15 +631,66 @@ summary {
   text-align: left;
   text-overflow: ellipsis;
 }
-.folder-nav button:hover,
-.folder-nav button.active { background: #f4f5f8; color: var(--ink); opacity: 1; }
-.folder-nav button.active { font-weight: 600; }
+.folder-nav > button:hover,
+.folder-nav > button.active,
+.folder-row:hover,
+.folder-row:focus-within,
+.folder-row.active { background: #f4f5f8; color: var(--ink); opacity: 1; }
+.folder-nav > button.active,
+.folder-row.active .folder-select { font-weight: 600; }
+.folder-row { position: relative; min-width: 0; border-radius: 8px; }
+.folder-row .folder-select { padding-right: 38px; background: transparent; }
+.folder-row:hover .folder-select,
+.folder-row.active .folder-select { color: var(--ink); opacity: 1; }
+.folder-options-trigger {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #777f8d;
+  opacity: 0;
+  pointer-events: none;
+}
+.folder-row:hover .folder-options-trigger,
+.folder-row:focus-within .folder-options-trigger,
+.folder-options-trigger[aria-expanded="true"] { opacity: 1; pointer-events: auto; }
+.folder-options-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 5;
+  min-width: 132px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 9%);
+}
+.folder-options-menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+}
+.folder-options-menu button:hover { background: #f4f5f8; opacity: 1; }
+@media (hover: none) {
+  .folder-options-trigger { opacity: 1; pointer-events: auto; }
+}
 .folder-form { margin-top: 16px; }
 .folder-form input { padding: 10px 11px; font-size: 13px; }
-.folder-form-actions,
-.folder-manage { display: flex; gap: 16px; margin-top: 7px; }
-.folder-manage { padding-left: 10px; }
-.folder-manage button { color: var(--muted); }
+.folder-form-actions { display: flex; gap: 16px; margin-top: 7px; }
 .folder-error { margin-top: 12px; color: #b42318; font-size: 12px; line-height: 1.4; }
 .folder-empty { padding: 28px 0; font-size: 13px; }
 .extraction-meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -742,10 +793,10 @@ summary {
 @media (max-width: 760px) {
   .library-layout { display: block; }
   .folder-sidebar { padding-top: 12px; }
-  .folder-nav { flex-direction: row; gap: 4px; overflow-x: auto; margin: 10px 0 16px; padding-bottom: 4px; }
-  .folder-nav button { width: auto; max-width: 180px; flex: none; white-space: nowrap; }
+  .folder-nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px; margin: 10px 0 16px; }
+  .folder-nav > button,
+  .folder-select { max-width: 100%; white-space: nowrap; }
   .folder-form { max-width: 260px; margin: 0 0 16px; }
-  .folder-manage { margin: 0 0 14px; }
 }
 .slide .section-title {
   margin-bottom: 12px;
